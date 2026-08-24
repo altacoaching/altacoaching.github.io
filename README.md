@@ -1,2 +1,13 @@
-# altacoaching.github.io
-Site officiel d’ALTA Coaching : coaching sportif personnalisé, sport-santé, remise en forme et accompagnement individuel dans le département du Cher (18). Découvrez les offres, services, tarifs et solutions adaptées à vos objectifs, votre niveau et votre santé.
+# ALTA Coaching
+
+Site officiel d’ALTA Coaching, service de coaching sportif personnalisé basé à Saint-Amand-Montrond.
+
+Le site présente mes services de coaching individuel, sport-santé, remise en forme et accompagnement personnalisé, ainsi que mes offres et tarifs.
+
+## Objectifs du site
+
+- Présenter ALTA Coaching
+- Détailler les services proposés
+- Afficher les offres et tarifs
+- Permettre une prise de contact simple
+- Développer la visibilité locale d’ALTA Coaching
