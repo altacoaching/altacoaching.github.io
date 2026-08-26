@@ -1097,6 +1097,8 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .footer-grid-v34 .footer-social-icons a { transition: none !important; transform: none !important; }
 }
 
+.running-section-visual { display: none; }
+
 /* ========================================
    Responsive V1 — mobile-first refinements
 ======================================== */
@@ -1283,7 +1285,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 
   .service-run-page .service-portrait { background: #eef1f4; }
   .service-run-page .service-portrait img { object-fit: contain; object-position: center; }
-  .running-section-visual { margin-top: 1.5rem; }
+  .running-section-visual { display: block; margin-top: 1.5rem; }
   .running-section-visual img { width: 100%; height: auto; border: 5px solid #fff; box-shadow: 10px 12px 0 var(--color-primary); }
 
   .reveal {
