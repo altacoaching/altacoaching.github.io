@@ -1,4 +1,4 @@
-# ALTA Coaching Premium V3.1
+# ALTA Coaching Premium V3.2
 
 Site statique en HTML, CSS et JavaScript vanilla, prêt pour GitHub Pages.
 
@@ -10,7 +10,7 @@ Ouvrez `index.html` directement ou lancez un petit serveur statique. Aucune inst
 
 Le bloc `CONFIG` en tête de `js/script.js` centralise :
 
-- l’e-mail et le téléphone ;
+- l’e-mail ;
 - l’identifiant Tally `eqWMpl` ;
 - le lien Cal.com `maxime-alta-coaching-ghihbc/15min` ;
 - l’activation éventuelle des événements analytics.
@@ -32,9 +32,9 @@ Le calendrier utilise le snippet inline officiel Cal.com, le namespace `15min`, 
 
 ## Pages SEO
 
-Les pages `coaching-sportif-en-ligne`, `sport-sante`, `musculation`, `running`, `preparation-physique`, `a-propos` et `contact` possèdent du contenu distinct, leurs métadonnées et un maillage interne.
+Les pages `coaching-sportif-en-ligne`, `musculation`, `running`, `preparation-physique`, `a-propos` et `contact` possèdent du contenu distinct, leurs métadonnées et un maillage interne.
 
-Les pages secondaires réutilisent le header, le menu mobile accessible et le footer premium de la homepage. Le détail des vérifications V3.1 se trouve dans `V3.1-VALIDATION.md`.
+Les pages secondaires réutilisent le header, le menu mobile accessible et le footer premium de la homepage. La direction artistique V3.2 est décrite dans `UI-UX-V3.2.md`.
 
 ## Avant publication
 

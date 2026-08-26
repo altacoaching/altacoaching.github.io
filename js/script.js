@@ -3,7 +3,6 @@
 ================================ */
 const CONFIG = {
   email: "levilain.maxime@gmail.com",
-  phone: "+33640736546",
   tallyFormId: "eqWMpl",
   calLink: "maxime-alta-coaching-ghihbc/15min",
   analyticsEnabled: false
@@ -185,16 +184,16 @@ if (mobileCta && footer) {
 }
 
 /* Qualifications tilt */
-const tiltCard = document.querySelector("[data-tilt]");
-if (tiltCard && !prefersReducedMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+document.querySelectorAll("[data-tilt]").forEach((tiltCard) => {
+  if (prefersReducedMotion || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
   tiltCard.addEventListener("pointermove", (event) => {
     const rect = tiltCard.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
-    tiltCard.style.transform = `rotateX(${-y * 3}deg) rotateY(${x * 4}deg) scale(1.01)`;
+    tiltCard.style.transform = `rotateX(${-y * 2.5}deg) rotateY(${x * 3.5}deg) scale(1.008)`;
   });
   tiltCard.addEventListener("pointerleave", () => { tiltCard.style.transform = ""; });
-}
+});
 
 /* Footer */
 const year = document.querySelector("#year");
