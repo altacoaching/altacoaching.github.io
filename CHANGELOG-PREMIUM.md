@@ -1,5 +1,20 @@
 # Changelog Premium V3
 
+## V3.4 - Simplification et conversion
+
+- Homepage ramenée à huit grandes sections : hero, suite du premier contact, services, formules, coach et qualifications, bilan Tally, réservation Cal.com, contact et FAQ.
+- Parcours de conversion clarifié autour de deux actions principales : « Faire mon bilan » et « Prendre rendez-vous ».
+- Offre recentrée sur trois services : musculation, running et préparation physique.
+- Pages services condensées en sept sections utiles, avec un univers éditorial et visuel distinct pour chaque discipline.
+- Page Contact simplifiée autour de quatre actions : bilan, rendez-vous, question écrite et email direct.
+- Adresse officielle uniformisée : `maxime.altacoaching@gmail.com`.
+- Liens officiels Facebook, Instagram et TikTok ajoutés à tous les pieds de page.
+- Pied de page V3.4 appliqué à toutes les pages publiques, avec services, actions, contact, réseaux et informations légales.
+- Champs cachés Tally `formule` et `source`, fallback robuste et intégration inline officielle conservés.
+- Intégration Cal.com officielle conservée avec le namespace `15min`, la vue mensuelle, la vue mobile par créneaux et la transmission des paramètres.
+- Responsive des modules Tally, Cal.com, services, contact et footer renforcé, avec respect de `prefers-reduced-motion`.
+- Ajout de `V3.4-SIMPLIFICATION-CONVERSION.md` et création du livrable `alta-coaching-premium-v3.4.zip`.
+
 ## V3.2 - Direction artistique et UI/UX haute énergie
 
 - Hero de la homepage transformé en composition éditoriale de campagne : typographie XXL, portrait intégré dans une structure asymétrique, grille, index et accents graphiques ALTA.

@@ -2,7 +2,10 @@
    CONFIGURATION ALTA COACHING
 ================================ */
 const CONFIG = {
-  email: "levilain.maxime@gmail.com",
+  email: "maxime.altacoaching@gmail.com",
+  facebookUrl: "https://www.facebook.com/profile.php?id=61591944164231",
+  instagramUrl: "https://www.instagram.com/maxime.altacoaching/",
+  tiktokUrl: "https://www.tiktok.com/@maxime.altacoaching",
   tallyFormId: "eqWMpl",
   calLink: "maxime-alta-coaching-ghihbc/15min",
   analyticsEnabled: false
@@ -104,14 +107,14 @@ function loadTallyEmbeds() {
   }
 }
 
-function openTally(formula = "") {
-  trackEvent("tally_open", formula ? { formula } : {});
+function openTally(formula = "", source = "site") {
+  trackEvent("tally_open", formula ? { formula, source } : { source });
   if (window.Tally?.openPopup) {
     window.Tally.openPopup(CONFIG.tallyFormId, {
       layout: "modal",
       width: 700,
       hideTitle: true,
-      hiddenFields: formula ? { formule: formula, source: "site" } : { source: "site" },
+      hiddenFields: { formule: formula, source },
       onSubmit: () => trackEvent("tally_submit")
     });
     return;
@@ -125,7 +128,7 @@ function openTally(formula = "") {
 }
 
 document.querySelectorAll("[data-tally-popup]").forEach((button) => {
-  button.addEventListener("click", () => openTally(button.dataset.formula || ""));
+  button.addEventListener("click", () => openTally(button.dataset.formula || "", button.dataset.source || "site"));
 });
 loadTallyEmbeds();
 
@@ -179,8 +182,15 @@ loadCal();
 const mobileCta = document.querySelector(".mobile-cta");
 const footer = document.querySelector(".footer");
 if (mobileCta && footer) {
-  const footerObserver = new IntersectionObserver(([entry]) => mobileCta.classList.toggle("is-hidden", entry.isIntersecting));
-  footerObserver.observe(footer);
+  const blockedTargets = new Set();
+  const mobileCtaObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) blockedTargets.add(entry.target);
+      else blockedTargets.delete(entry.target);
+    });
+    mobileCta.classList.toggle("is-hidden", blockedTargets.size > 0);
+  }, { threshold: 0.08 });
+  [footer, document.querySelector("#questionnaire"), document.querySelector("#reservation")].filter(Boolean).forEach((element) => mobileCtaObserver.observe(element));
 }
 
 /* Qualifications tilt */
