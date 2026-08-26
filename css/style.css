@@ -1097,6 +1097,8 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .footer-grid-v34 .footer-social-icons a { transition: none !important; transform: none !important; }
 }
 
+.running-section-visual { display: none; }
+
 /* ========================================
    Responsive V1 — mobile-first refinements
 ======================================== */
@@ -1213,6 +1215,13 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 }
 
 @media (max-width: 430px) {
+  .about-page .page-hero.section-dark { background: #004aad; }
+  .about-page .page-hero.section-dark h1,
+  .about-page .page-hero.section-dark p { color: #fff; }
+  .about-page .page-hero.section-dark .eyebrow { color: var(--color-accent); }
+  .about-qualifications-picture,
+  .about-qualifications-picture img { display: block; width: 100%; height: auto; }
+
   .container,
   .container-narrow,
   .prose,
@@ -1273,6 +1282,11 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .email-nowrap { font-size: clamp(.59rem, 2.9vw, .76rem); letter-spacing: -.025em; }
 
   .mobile-cta { font-size: .67rem; }
+
+  .service-run-page .service-portrait { background: #eef1f4; }
+  .service-run-page .service-portrait img { object-fit: contain; object-position: center; }
+  .running-section-visual { display: block; margin-top: 1.5rem; }
+  .running-section-visual img { width: 100%; height: auto; border: 5px solid #fff; box-shadow: 10px 12px 0 var(--color-primary); }
 
   .reveal {
     opacity: 0;
