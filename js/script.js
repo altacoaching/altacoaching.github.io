@@ -87,6 +87,58 @@ const revealObserver = new IntersectionObserver((entries, observer) => {
   : { threshold: 0.12 });
 document.querySelectorAll(".reveal, .qualification-reveal").forEach((element) => revealObserver.observe(element));
 
+/* Mobile scroll rollover — one centred card per section */
+const scrollActiveGroups = [
+  [...document.querySelectorAll("#coaching .service-row")],
+  [...document.querySelectorAll("#formules .price-card")]
+].filter((group) => group.length);
+const scrollActiveMedia = window.matchMedia("(max-width: 430px)");
+let scrollActiveFrame = 0;
+
+function updateScrollActiveGroups() {
+  const enabled = scrollActiveMedia.matches && !prefersReducedMotion;
+  const viewportCenter = window.innerHeight / 2;
+  const activationDistance = window.innerHeight * 0.34;
+
+  scrollActiveGroups.forEach((group) => {
+    let closestCard = null;
+    let closestDistance = Infinity;
+
+    if (enabled) {
+      group.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.top + rect.height / 2;
+        const distance = Math.abs(cardCenter - viewportCenter);
+        if (rect.bottom > 0 && rect.top < window.innerHeight && distance < closestDistance) {
+          closestCard = card;
+          closestDistance = distance;
+        }
+      });
+    }
+
+    group.forEach((card) => {
+      card.classList.toggle("is-scroll-active", card === closestCard && closestDistance <= activationDistance);
+    });
+  });
+}
+
+function scheduleScrollActiveGroups() {
+  if (scrollActiveFrame) return;
+  scrollActiveFrame = window.requestAnimationFrame(() => {
+    scrollActiveFrame = 0;
+    updateScrollActiveGroups();
+  });
+}
+
+if (scrollActiveGroups.length) {
+  scheduleScrollActiveGroups();
+  window.addEventListener("load", scheduleScrollActiveGroups, { once: true });
+  window.addEventListener("pageshow", scheduleScrollActiveGroups);
+  window.addEventListener("scroll", scheduleScrollActiveGroups, { passive: true });
+  window.addEventListener("resize", scheduleScrollActiveGroups, { passive: true });
+  window.addEventListener("orientationchange", scheduleScrollActiveGroups, { passive: true });
+}
+
 /* Tally - official embed loader */
 function loadTallyEmbeds() {
   const documentRef = document;
