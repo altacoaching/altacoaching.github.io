@@ -651,7 +651,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 .service-row:focus-visible > b { color: #fff; }
 .service-row:hover > b i,
 .service-row:focus-visible > b i { transform: translate(4px, -3px); }
-.service-run::after { content: ""; position: absolute; z-index: -1; right: 12%; width: 180px; height: 180px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; transform: scale(.5); opacity: 0; transition: transform var(--motion-normal) var(--ease-premium), opacity var(--motion-normal) ease; }
+.service-run::after { content: none; position: absolute; z-index: -1; right: 12%; width: 180px; height: 180px; border: 1px solid rgba(255,255,255,.24); border-radius: 50%; transform: scale(.5); opacity: 0; transition: transform var(--motion-normal) var(--ease-premium), opacity var(--motion-normal) ease; }
 .service-run:hover::after,
 .service-run:focus-visible::after { transform: scale(1); opacity: 1; }
 
@@ -668,7 +668,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 .price-card::after { content: ""; position: absolute; inset: auto 0 0; height: 6px; transform: scaleX(0); transform-origin: left; background: var(--color-accent); transition: transform var(--motion-normal) var(--ease-premium); }
 .price-card h3 { transition: transform var(--motion-normal) var(--ease-premium), color var(--motion-normal) var(--ease-premium); }
 .price-featured { transform: translateY(-12px); border-width: 2px; box-shadow: 0 30px 80px rgba(0,74,173,.22); }
-.price-featured::before { content: "02"; position: absolute; right: .9rem; bottom: 3rem; color: rgba(255,255,255,.08); font: 400 10rem/.8 var(--font-display); pointer-events: none; }
+.price-featured::before { content: none; position: absolute; right: .9rem; bottom: 3rem; color: rgba(255,255,255,.08); font: 400 10rem/.8 var(--font-display); pointer-events: none; }
 .price-featured::after { transform: scaleX(1); }
 .comparison-wrap { margin-top: clamp(2rem, 3vw, 3.5rem); border: 1px solid var(--color-border); box-shadow: 0 18px 48px rgba(17,19,23,.09); }
 .comparison-wrap caption { padding: 1.35rem 1.5rem .9rem; font-size: clamp(2rem, 3vw, 3.2rem); }
