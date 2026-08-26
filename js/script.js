@@ -75,13 +75,16 @@ if (menuButton && menu) {
 }
 
 /* Reveal animations */
+const isMobileReveal = window.matchMedia("(max-width: 430px)").matches;
 const revealObserver = new IntersectionObserver((entries, observer) => {
   entries.forEach((entry) => {
     if (!entry.isIntersecting) return;
     entry.target.classList.add("is-visible");
     observer.unobserve(entry.target);
   });
-}, { threshold: 0.12 });
+}, isMobileReveal
+  ? { threshold: 0.03, rootMargin: "0px 0px -10% 0px" }
+  : { threshold: 0.12 });
 document.querySelectorAll(".reveal, .qualification-reveal").forEach((element) => revealObserver.observe(element));
 
 /* Tally - official embed loader */
