@@ -1341,16 +1341,43 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   }
   .reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-  #coaching .service-row.reveal {
-    opacity: 0;
-    transform: translateY(26px) scale(.985);
-    transform-origin: center bottom;
-    transition: opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1), box-shadow .7s ease;
+  #coaching .service-row {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    box-shadow: none;
+    transform: scale(1);
+    transition: padding .45s cubic-bezier(.22,1,.36,1), background .45s ease, box-shadow .45s ease, transform .45s cubic-bezier(.22,1,.36,1);
   }
-  #coaching .service-row.reveal.is-visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    box-shadow: 0 12px 26px rgba(0,74,173,.1);
+  #coaching .service-row.reveal { opacity: 0; transform: translateY(24px) scale(.99); }
+  #coaching .service-row.reveal.is-visible { opacity: 1; transform: translateY(0) scale(1); }
+  #coaching .service-row.reveal.is-visible.is-scroll-active {
+    z-index: 2;
+    padding-inline: .8rem;
+    background: #fff;
+    box-shadow: 0 18px 38px rgba(17,19,23,.16), 0 8px 0 rgba(0,74,173,.10);
+    transform: translateY(-6px) scale(1.015);
+  }
+  #coaching .service-row.is-scroll-active h3 { color: var(--color-accent); }
+  #coaching .service-row.is-scroll-active > b { transform: translateX(5px); }
+  #coaching .service-row h3,
+  #coaching .service-row > b { transition: color .45s ease, transform .45s cubic-bezier(.22,1,.36,1); }
+
+  #formules .price-card {
+    position: relative;
+    z-index: 1;
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transform: scale(1);
+    transition: border-color .45s ease, box-shadow .45s ease, transform .45s cubic-bezier(.22,1,.36,1);
+  }
+  #formules .price-card.reveal { opacity: 0; transform: translateY(24px) scale(.99); }
+  #formules .price-card.reveal.is-visible { opacity: 1; transform: translateY(0) scale(1); }
+  #formules .price-card.reveal.is-visible.is-scroll-active {
+    z-index: 2;
+    border-color: rgba(0,74,173,.68);
+    box-shadow: 0 22px 42px rgba(17,19,23,.18), 0 8px 0 rgba(252,142,76,.18);
+    transform: translateY(-8px) scale(1.015);
   }
 }
 
@@ -1375,7 +1402,11 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .reveal,
   .reveal.is-visible,
   #coaching .service-row.reveal,
-  #coaching .service-row.reveal.is-visible { opacity: 1; transform: none; transition: none; }
+  #coaching .service-row.reveal.is-visible,
+  #coaching .service-row.reveal.is-visible.is-scroll-active,
+  #formules .price-card.reveal,
+  #formules .price-card.reveal.is-visible,
+  #formules .price-card.reveal.is-visible.is-scroll-active { opacity: 1; transform: none; transition: none; }
 }
 
 @media (min-width: 431px) {
