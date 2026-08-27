@@ -1798,3 +1798,9 @@ body.question-dialog-open { overflow: hidden; }
   }
 }
 
+/* V4.8 — Accent ALTA Coaching dans le Hero À propos */
+.about-page .page-hero .about-brand-accent {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
