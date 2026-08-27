@@ -1,9 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ALTA">
-  <defs>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00357d" flood-opacity=".22"/>
-    </filter>
-  </defs>
-  <circle cx="32" cy="32" r="29" fill="#fff" stroke="#b9d2ef" stroke-width="2" filter="url(#shadow)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="11 15 34 33" role="img" aria-label="ALTA Coaching">
   <path fill="#004aad" d="M18.5 47 28 16h18L41 47h-9l1.9-8.2h-7.1L24.7 47h-6.2Zm10.3-16h6.9l2-8.7h-6.3L28.8 31Z" transform="skewX(-8 32 32)"/>
 </svg>
