@@ -1497,7 +1497,10 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 }
 
 @media (min-width: 1024px) {
-  .home-page-v34 .campaign-hero .hero-tag { font-size: .72rem; }
+  .home-page-v34 .campaign-hero .hero-tag {
+    padding: .72rem 1rem;
+    font-size: .75rem;
+  }
 }
 
 .home-page-v34 .tally-shell iframe { height: 520px; min-height: 520px; }
