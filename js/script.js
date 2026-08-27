@@ -187,6 +187,82 @@ document.querySelectorAll("[data-tally-popup]").forEach((button) => {
 });
 loadTallyEmbeds();
 
+/* Question popup - Formspree */
+const questionPopupTriggers = [...document.querySelectorAll("[data-question-popup]")];
+if (questionPopupTriggers.length) {
+  const questionDialog = document.createElement("dialog");
+  questionDialog.id = "question-dialog";
+  questionDialog.className = "question-dialog";
+  questionDialog.setAttribute("aria-labelledby", "question-dialog-title");
+  questionDialog.innerHTML = `
+    <div class="question-dialog-panel">
+      <div class="question-dialog-head">
+        <div><p class="eyebrow">UNE QUESTION ?</p><h2 id="question-dialog-title">LAISSEZ-MOI UN MESSAGE.</h2></div>
+        <button class="question-dialog-close" type="button" aria-label="Fermer la fenêtre">×</button>
+      </div>
+      <form class="question-form" action="https://formspree.io/f/xrpgzlor" method="POST">
+        <label>Nom<input type="text" name="name" autocomplete="name" required></label>
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <label>Message<textarea name="message" rows="6" required></textarea></label>
+        <input type="hidden" name="source" value="site">
+        <button class="button button-primary" type="submit">Envoyer ma question <span aria-hidden="true">↗</span></button>
+        <p class="question-form-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>`;
+  document.body.appendChild(questionDialog);
+
+  const questionForm = questionDialog.querySelector(".question-form");
+  const questionStatus = questionDialog.querySelector(".question-form-status");
+  const questionSource = questionForm.querySelector('[name="source"]');
+  const questionSubmit = questionForm.querySelector('[type="submit"]');
+  let questionPreviousFocus = null;
+
+  questionPopupTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      questionPreviousFocus = document.activeElement;
+      questionSource.value = trigger.dataset.source || "site";
+      questionStatus.textContent = "";
+      questionStatus.className = "question-form-status";
+      questionDialog.showModal();
+      document.body.classList.add("question-dialog-open");
+      window.requestAnimationFrame(() => questionForm.querySelector("input")?.focus());
+    });
+  });
+
+  questionDialog.querySelector(".question-dialog-close").addEventListener("click", () => questionDialog.close());
+  questionDialog.addEventListener("click", (event) => {
+    if (event.target === questionDialog) questionDialog.close();
+  });
+  questionDialog.addEventListener("close", () => {
+    document.body.classList.remove("question-dialog-open");
+    questionPreviousFocus?.focus();
+  });
+
+  questionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    questionSubmit.disabled = true;
+    questionStatus.textContent = "Envoi en cours…";
+    questionStatus.className = "question-form-status";
+    try {
+      const response = await fetch(questionForm.action, {
+        method: "POST",
+        body: new FormData(questionForm),
+        headers: { Accept: "application/json" }
+      });
+      if (!response.ok) throw new Error("Formspree request failed");
+      questionForm.reset();
+      questionStatus.textContent = "Merci, votre message a bien été envoyé.";
+      questionStatus.classList.add("is-success");
+    } catch (error) {
+      questionStatus.textContent = "L’envoi a échoué. Merci de réessayer dans un instant.";
+      questionStatus.classList.add("is-error");
+    } finally {
+      questionSubmit.disabled = false;
+    }
+  });
+}
+
 /* Cal.com - official inline embed */
 function loadCal() {
   if (!document.querySelector("#my-cal-inline-15min")) return;
@@ -255,107 +331,11 @@ document.querySelectorAll("[data-tilt]").forEach((tiltCard) => {
     const rect = tiltCard.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
-    if (tiltCard.matches(".about-qualifications-picture")) {
-      tiltCard.style.transform = `perspective(1200px) rotateX(${-y * 5}deg) rotateY(${x * 6}deg) translateY(-6px) scale(1.012)`;
-    } else {
-      tiltCard.style.transform = `rotateX(${-y * 2.5}deg) rotateY(${x * 3.5}deg) scale(1.008)`;
-    }
+    tiltCard.style.transform = `rotateX(${-y * 2.5}deg) rotateY(${x * 3.5}deg) scale(1.008)`;
   });
   tiltCard.addEventListener("pointerleave", () => { tiltCard.style.transform = ""; });
-});
-
-
-
-/* Footer — retour au Hero */
-document.querySelectorAll('.footer-bottom a[href="#top"]').forEach((link) => {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    closeMenu();
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: prefersReducedMotion ? "auto" : "smooth"
-    });
-  });
 });
 
 /* Footer */
 const year = document.querySelector("#year");
 if (year) year.textContent = new Date().getFullYear();
-
-/* Popup "Poser une question" — Formspree */
-const questionDialog = document.querySelector("#question-dialog");
-const questionForm = document.querySelector("#question-form");
-const questionStatus = document.querySelector("#question-form-status");
-const questionSource = document.querySelector("#question-source");
-const questionSubmit = questionForm?.querySelector(".question-submit");
-let questionPreviousFocus = null;
-
-function openQuestionDialog(source = "site") {
-  if (!questionDialog) return;
-  questionPreviousFocus = document.activeElement;
-  if (questionSource) questionSource.value = source;
-  if (questionStatus) {
-    questionStatus.textContent = "";
-    questionStatus.className = "question-form-status";
-  }
-  if (typeof questionDialog.showModal === "function") {
-    questionDialog.showModal();
-    document.body.classList.add("question-dialog-open");
-    window.setTimeout(() => questionForm?.querySelector('input[name="name"]')?.focus(), 50);
-  }
-}
-
-function closeQuestionDialog() {
-  if (!questionDialog?.open) return;
-  questionDialog.close();
-  document.body.classList.remove("question-dialog-open");
-  questionPreviousFocus?.focus?.();
-}
-
-document.querySelectorAll("[data-question-popup]").forEach((button) => {
-  button.addEventListener("click", () => openQuestionDialog(button.dataset.source || "site"));
-});
-
-document.querySelectorAll("[data-question-close]").forEach((button) => {
-  button.addEventListener("click", closeQuestionDialog);
-});
-
-questionDialog?.addEventListener("cancel", () => {
-  document.body.classList.remove("question-dialog-open");
-});
-
-questionDialog?.addEventListener("click", (event) => {
-  if (event.target === questionDialog) closeQuestionDialog();
-});
-
-questionForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!questionSubmit || !questionStatus) return;
-
-  questionSubmit.disabled = true;
-  questionStatus.textContent = "Envoi en cours…";
-  questionStatus.className = "question-form-status";
-
-  try {
-    const response = await fetch(questionForm.action, {
-      method: "POST",
-      body: new FormData(questionForm),
-      headers: { Accept: "application/json" }
-    });
-
-    if (!response.ok) throw new Error("formspree");
-
-    const source = questionSource?.value || "site";
-    questionForm.reset();
-    if (questionSource) questionSource.value = source;
-    questionStatus.textContent = "Votre message a bien été envoyé. Merci !";
-    questionStatus.className = "question-form-status is-success";
-  } catch (error) {
-    questionStatus.textContent = "L’envoi a échoué. Réessayez dans un instant.";
-    questionStatus.className = "question-form-status is-error";
-  } finally {
-    questionSubmit.disabled = false;
-  }
-});
-
