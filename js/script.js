@@ -11,6 +11,52 @@ const CONFIG = {
   analyticsEnabled: false
 };
 
+/* Cal.com - official inline embed */
+function loadCal() {
+  if (!document.querySelector("#my-cal-inline-15min")) return;
+  (function (C, A, L) {
+    const push = (api, args) => api.q.push(args);
+    const documentRef = C.document;
+    C.Cal = C.Cal || function () {
+      const cal = C.Cal;
+      const args = arguments;
+      if (!cal.loaded) {
+        cal.ns = {};
+        cal.q = cal.q || [];
+        documentRef.head.appendChild(documentRef.createElement("script")).src = A;
+        cal.loaded = true;
+      }
+      if (args[0] === L) {
+        const api = function () { push(api, arguments); };
+        const namespace = args[1];
+        api.q = api.q || [];
+        if (typeof namespace === "string") {
+          cal.ns[namespace] = cal.ns[namespace] || api;
+          push(cal.ns[namespace], args);
+          push(cal, ["initNamespace", namespace]);
+        } else push(cal, args);
+        return;
+      }
+      push(cal, args);
+    };
+  })(window, "https://app.cal.com/embed/embed.js", "init");
+
+  window.Cal("init", "15min", { origin: "https://app.cal.com" });
+  window.Cal.config = window.Cal.config || {};
+  window.Cal.config.forwardQueryParams = true;
+  window.Cal.ns["15min"]("inline", {
+    elementOrSelector: "#my-cal-inline-15min",
+    config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
+    calLink: CONFIG.calLink
+  });
+  window.Cal.ns["15min"]("ui", {
+    cssVarsPerTheme: { light: { "cal-brand": "#004aad" } },
+    hideEventTypeDetails: false,
+    layout: "month_view"
+  });
+}
+loadCal();
+
 /* Utilities */
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -262,52 +308,6 @@ if (questionPopupTriggers.length) {
     }
   });
 }
-
-/* Cal.com - official inline embed */
-function loadCal() {
-  if (!document.querySelector("#my-cal-inline-15min")) return;
-  (function (C, A, L) {
-    const push = (api, args) => api.q.push(args);
-    const documentRef = C.document;
-    C.Cal = C.Cal || function () {
-      const cal = C.Cal;
-      const args = arguments;
-      if (!cal.loaded) {
-        cal.ns = {};
-        cal.q = cal.q || [];
-        documentRef.head.appendChild(documentRef.createElement("script")).src = A;
-        cal.loaded = true;
-      }
-      if (args[0] === L) {
-        const api = function () { push(api, arguments); };
-        const namespace = args[1];
-        api.q = api.q || [];
-        if (typeof namespace === "string") {
-          cal.ns[namespace] = cal.ns[namespace] || api;
-          push(cal.ns[namespace], args);
-          push(cal, ["initNamespace", namespace]);
-        } else push(cal, args);
-        return;
-      }
-      push(cal, args);
-    };
-  })(window, "https://app.cal.com/embed/embed.js", "init");
-
-  window.Cal("init", "15min", { origin: "https://app.cal.com" });
-  window.Cal.config = window.Cal.config || {};
-  window.Cal.config.forwardQueryParams = true;
-  window.Cal.ns["15min"]("inline", {
-    elementOrSelector: "#my-cal-inline-15min",
-    config: { layout: "month_view", useSlotsViewOnSmallScreen: "true" },
-    calLink: CONFIG.calLink
-  });
-  window.Cal.ns["15min"]("ui", {
-    cssVarsPerTheme: { light: { "cal-brand": "#004aad" } },
-    hideEventTypeDetails: false,
-    layout: "month_view"
-  });
-}
-loadCal();
 
 /* Mobile CTA */
 const mobileCta = document.querySelector(".mobile-cta");
