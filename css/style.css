@@ -1672,3 +1672,129 @@ body.question-dialog-open { overflow: hidden; }
   }
 }
 
+/* ==============================
+   V4.4 — HARMONISATION DESKTOP / MOBILE
+================================ */
+
+/* Contact — réseaux lisibles sur fond sombre */
+.contact-page-v34 .section-dark .social-links a,
+.contact-page-v34 .section-dark .social-links a span {
+  color: var(--color-accent);
+}
+.contact-page-v34 .section-dark .social-links a {
+  border-color: rgba(252, 142, 76, .72);
+}
+.contact-page-v34 .section-dark .social-links a:hover,
+.contact-page-v34 .section-dark .social-links a:focus-visible {
+  color: #fff;
+  border-color: #fff;
+}
+
+/* À propos — même Hero bleu ALTA sur toutes les tailles */
+.about-page .page-hero.section-dark {
+  background: #004aad;
+  color: #fff;
+}
+.about-page .page-hero.section-dark h1,
+.about-page .page-hero.section-dark p {
+  color: #fff;
+}
+.about-page .page-hero.section-dark .eyebrow {
+  color: var(--color-accent);
+}
+
+/* À propos — illustration qualifications toujours au ratio naturel */
+.about-qualifications-picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 1.75rem auto 3rem;
+  padding: .4rem;
+  overflow: hidden;
+  border: 1px solid rgba(0, 74, 173, .18);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 34px rgba(0, 74, 173, .18), 7px 8px 0 rgba(252, 142, 76, .28);
+}
+.about-qualifications-picture img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto !important;
+  aspect-ratio: auto;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 11px;
+}
+
+/* Running — mêmes illustrations que sur smartphone, également sur desktop */
+.service-run-page .service-portrait {
+  background: #eef1f4;
+}
+.service-run-page .service-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+.running-section-visual {
+  display: block;
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+}
+.running-section-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 7px solid #fff;
+  box-shadow: 18px 20px 0 var(--color-primary);
+}
+
+@media (max-width: 430px) {
+  .running-section-visual {
+    margin-top: 1.5rem;
+  }
+  .running-section-visual img {
+    border-width: 5px;
+    box-shadow: 10px 12px 0 var(--color-primary);
+  }
+}
+
+/* ==============================
+   V4.5 — CARTE QUALIFICATIONS DESKTOP
+================================ */
+@media (hover: hover) and (pointer: fine) and (min-width: 821px) {
+  .about-page .about-qualifications-picture {
+    position: relative;
+    overflow: visible;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    will-change: transform;
+    cursor: default;
+    border: 2px solid rgba(0, 74, 173, .24);
+    outline: 1px solid rgba(255, 255, 255, .85);
+    outline-offset: -7px;
+    box-shadow:
+      0 24px 50px rgba(17, 19, 23, .16),
+      10px 12px 0 rgba(0, 74, 173, .92),
+      16px 18px 0 rgba(252, 142, 76, .48);
+    transition:
+      transform .18s ease-out,
+      box-shadow .28s ease,
+      border-color .28s ease;
+  }
+
+  .about-page .about-qualifications-picture:hover {
+    border-color: rgba(0, 74, 173, .6);
+    box-shadow:
+      0 32px 68px rgba(17, 19, 23, .22),
+      12px 14px 0 rgba(0, 74, 173, 1),
+      20px 22px 0 rgba(252, 142, 76, .62);
+  }
+
+  .about-page .about-qualifications-picture img {
+    transform: translateZ(18px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7);
+  }
+}
+
