@@ -255,7 +255,11 @@ document.querySelectorAll("[data-tilt]").forEach((tiltCard) => {
     const rect = tiltCard.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
-    tiltCard.style.transform = `rotateX(${-y * 2.5}deg) rotateY(${x * 3.5}deg) scale(1.008)`;
+    if (tiltCard.matches(".about-qualifications-picture")) {
+      tiltCard.style.transform = `perspective(1200px) rotateX(${-y * 5}deg) rotateY(${x * 6}deg) translateY(-6px) scale(1.012)`;
+    } else {
+      tiltCard.style.transform = `rotateX(${-y * 2.5}deg) rotateY(${x * 3.5}deg) scale(1.008)`;
+    }
   });
   tiltCard.addEventListener("pointerleave", () => { tiltCard.style.transform = ""; });
 });
