@@ -260,6 +260,98 @@ document.querySelectorAll("[data-tilt]").forEach((tiltCard) => {
   tiltCard.addEventListener("pointerleave", () => { tiltCard.style.transform = ""; });
 });
 
+
+
+/* Footer — retour au Hero */
+document.querySelectorAll('.footer-bottom a[href="#top"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    closeMenu();
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: prefersReducedMotion ? "auto" : "smooth"
+    });
+  });
+});
+
 /* Footer */
 const year = document.querySelector("#year");
 if (year) year.textContent = new Date().getFullYear();
+
+/* Popup "Poser une question" — Formspree */
+const questionDialog = document.querySelector("#question-dialog");
+const questionForm = document.querySelector("#question-form");
+const questionStatus = document.querySelector("#question-form-status");
+const questionSource = document.querySelector("#question-source");
+const questionSubmit = questionForm?.querySelector(".question-submit");
+let questionPreviousFocus = null;
+
+function openQuestionDialog(source = "site") {
+  if (!questionDialog) return;
+  questionPreviousFocus = document.activeElement;
+  if (questionSource) questionSource.value = source;
+  if (questionStatus) {
+    questionStatus.textContent = "";
+    questionStatus.className = "question-form-status";
+  }
+  if (typeof questionDialog.showModal === "function") {
+    questionDialog.showModal();
+    document.body.classList.add("question-dialog-open");
+    window.setTimeout(() => questionForm?.querySelector('input[name="name"]')?.focus(), 50);
+  }
+}
+
+function closeQuestionDialog() {
+  if (!questionDialog?.open) return;
+  questionDialog.close();
+  document.body.classList.remove("question-dialog-open");
+  questionPreviousFocus?.focus?.();
+}
+
+document.querySelectorAll("[data-question-popup]").forEach((button) => {
+  button.addEventListener("click", () => openQuestionDialog(button.dataset.source || "site"));
+});
+
+document.querySelectorAll("[data-question-close]").forEach((button) => {
+  button.addEventListener("click", closeQuestionDialog);
+});
+
+questionDialog?.addEventListener("cancel", () => {
+  document.body.classList.remove("question-dialog-open");
+});
+
+questionDialog?.addEventListener("click", (event) => {
+  if (event.target === questionDialog) closeQuestionDialog();
+});
+
+questionForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!questionSubmit || !questionStatus) return;
+
+  questionSubmit.disabled = true;
+  questionStatus.textContent = "Envoi en cours…";
+  questionStatus.className = "question-form-status";
+
+  try {
+    const response = await fetch(questionForm.action, {
+      method: "POST",
+      body: new FormData(questionForm),
+      headers: { Accept: "application/json" }
+    });
+
+    if (!response.ok) throw new Error("formspree");
+
+    const source = questionSource?.value || "site";
+    questionForm.reset();
+    if (questionSource) questionSource.value = source;
+    questionStatus.textContent = "Votre message a bien été envoyé. Merci !";
+    questionStatus.className = "question-form-status is-success";
+  } catch (error) {
+    questionStatus.textContent = "L’envoi a échoué. Réessayez dans un instant.";
+    questionStatus.className = "question-form-status is-error";
+  } finally {
+    questionSubmit.disabled = false;
+  }
+});
+
