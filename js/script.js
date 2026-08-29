@@ -339,3 +339,15 @@ document.querySelectorAll("[data-tilt]").forEach((tiltCard) => {
 /* Footer */
 const year = document.querySelector("#year");
 if (year) year.textContent = new Date().getFullYear();
+
+document.querySelectorAll('.footer-bottom a[href="#top"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (typeof closeMenu === "function") closeMenu();
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: prefersReducedMotion ? "auto" : "smooth"
+    });
+  });
+});
