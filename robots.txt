@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://altacoaching.github.io/sitemap.xml
+Sitemap: https://www.alta-coaching.fr/sitemap.xml
