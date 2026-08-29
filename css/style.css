@@ -461,6 +461,9 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 .social-links a:focus-visible { color: var(--color-accent); border-color: var(--color-accent); transform: translateY(-2px); }
 .social-links a:hover span,
 .social-links a:focus-visible span { transform: translate(4px, -2px); }
+.contact-page-v34 .social-contact-v34 .social-links a { border-color: var(--color-accent); color: var(--color-accent); font-size: clamp(1rem, 1.7vw, 1.25rem); }
+.contact-page-v34 .social-contact-v34 .social-links a:hover,
+.contact-page-v34 .social-contact-v34 .social-links a:focus-visible { border-color: #fff; color: #fff; }
 .faq-v34 { padding: clamp(1.5rem, 3vw, 2.5rem); border-top: 6px solid var(--color-primary); background: var(--color-surface); }
 .faq-v34 .faq-list { border-top: 1px solid var(--color-border); }
 
@@ -1089,28 +1092,28 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 .footer-social-icons { display: flex; flex-wrap: wrap; gap: .55rem; }
 .footer-grid-v34 .footer-social-icons a {
   display: inline-flex;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   align-items: center;
   justify-content: center;
-  flex: 0 0 42px;
+  flex: 0 0 46px;
   padding: 0;
-  border: 1px solid rgba(255,255,255,.42);
+  border: 1px solid var(--color-accent);
   border-radius: 50%;
-  color: #fff;
+  color: var(--color-accent);
   box-shadow: 0 0 0 rgba(0,0,0,0);
   transition: transform var(--motion-fast) var(--ease-premium), background var(--motion-fast) ease, color var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
-.footer-social-icons svg { width: 19px; height: 19px; fill: currentColor; }
+.footer-social-icons svg { width: 21px; height: 21px; fill: currentColor; }
 .footer-social-icons rect,
 .footer-social-icons circle { fill: none; stroke: currentColor; stroke-width: 1.8; }
 .footer-social-icons .icon-dot { fill: currentColor; stroke: none; }
 .footer-grid-v34 .footer-social-icons a:hover,
 .footer-grid-v34 .footer-social-icons a:focus-visible {
   transform: translateY(-3px);
-  border-color: var(--color-accent);
-  background: var(--color-accent);
-  color: var(--color-dark);
+  border-color: #fff;
+  background: transparent;
+  color: #fff;
   box-shadow: 0 9px 20px rgba(0,0,0,.2);
 }
 
