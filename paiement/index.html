@@ -48,10 +48,17 @@
               <span id="submit-spinner" class="spinner" hidden aria-hidden="true"></span>
             </button>
           </form>
+          <button id="amazon-pay-button" class="secondary-action" type="button">Payer avec Amazon Pay</button>
+        </section>
+
+        <section id="klarna-section" class="method-section" hidden aria-labelledby="klarna-title">
+          <div class="section-label"><span>03</span><h2 id="klarna-title">PAIEMENT EN PLUSIEURS FOIS</h2></div>
+          <p class="provider-copy">Payez avec Klarna selon les options disponibles pour votre achat.</p>
+          <button id="klarna-button" class="secondary-action" type="button">Payer avec Klarna</button>
         </section>
 
         <section id="bank-transfer-section" class="method-section bank-transfer" hidden aria-labelledby="bank-transfer-title">
-          <div class="section-label"><span>03</span><h2 id="bank-transfer-title">VIREMENT BANCAIRE</h2></div>
+          <div class="section-label"><span>04</span><h2 id="bank-transfer-title">VIREMENT BANCAIRE</h2></div>
           <p>Recevez les instructions officielles de virement sur la page sécurisée Stripe.</p>
           <label for="bank-email">Votre adresse e-mail</label>
           <input id="bank-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="client@example.com">

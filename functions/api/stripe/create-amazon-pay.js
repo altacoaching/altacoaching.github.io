@@ -17,39 +17,33 @@ export async function onRequest({ request, env }) {
 
     const origin = new URL(request.url).origin;
     const params = new URLSearchParams();
-    params.set("ui_mode", "elements");
     params.set("mode", offer.mode);
     params.set("line_items[0][price]", offer.priceId);
     params.set("line_items[0][quantity]", "1");
-    params.set("payment_method_types[0]", "card");
-    params.set("payment_method_types[1]", "link");
-    params.set("payment_method_types[2]", "paypal");
-    params.set("payment_method_types[3]", "sepa_debit");
-    params.set("return_url", `${origin}/paiement/retour/?session_id={CHECKOUT_SESSION_ID}`);
+    params.set("payment_method_types[0]", "amazon_pay");
+    params.set("success_url", `${origin}/paiement/retour/?session_id={CHECKOUT_SESSION_ID}`);
+    params.set("cancel_url", `${origin}/paiement/?offre=${encodeURIComponent(offer.key)}`);
     params.set("metadata[offer_key]", offer.key);
+    params.set("metadata[payment_flow]", "amazon_pay");
     params.set("locale", "fr");
 
     if (offer.mode === "subscription") {
       params.set("subscription_data[metadata][offer_key]", offer.key);
+      params.set("subscription_data[metadata][payment_flow]", "amazon_pay");
     } else {
       params.set("payment_intent_data[metadata][offer_key]", offer.key);
+      params.set("payment_intent_data[metadata][payment_flow]", "amazon_pay");
     }
 
     const session = await stripeRequest(env, "/v1/checkout/sessions", { method: "POST", params });
+    if (!session.url) throw new StripeRequestError("Amazon Pay n’est pas disponible actuellement.", 503);
 
-    return jsonResponse({
-      clientSecret: session.client_secret,
-      offer: {
-        key: offer.key,
-        label: offer.label,
-        amount: session.amount_total,
-        currency: session.currency || "eur",
-        recurring: offer.recurring
-      }
-    });
+    return jsonResponse({ url: session.url });
   } catch (error) {
-    const status = error instanceof StripeRequestError ? error.status : 500;
-    const message = status >= 500 ? "Le paiement sécurisé est temporairement indisponible." : error.message;
-    return jsonResponse({ error: message }, status);
+    const safeClientErrors = new Set(["invalid_content_type", "invalid_json", "preview_only", "sandbox_only"]);
+    if (error instanceof StripeRequestError && safeClientErrors.has(error.code)) {
+      return jsonResponse({ error: error.message }, error.status);
+    }
+    return jsonResponse({ error: "Amazon Pay n’est pas disponible actuellement." }, 503);
   }
 }
