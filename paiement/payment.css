@@ -129,7 +129,7 @@ h1 {
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
-.primary-action { color: var(--white); background: var(--blue); box-shadow: 5px 5px 0 var(--orange); }
+.primary-action { color: var(--ink); background: var(--orange); box-shadow: 5px 5px 0 var(--blue); }
 .secondary-action { color: var(--ink); background: var(--orange); box-shadow: 5px 5px 0 var(--blue); }
 .primary-action:not(:disabled):hover,
 .primary-action:not(:disabled):focus-visible,
@@ -147,8 +147,10 @@ h1 {
   animation: spin 700ms linear infinite;
 }
 
-.provider-copy,
+.payment-method-note,
 .bank-transfer p { margin: 0 0 1rem; color: rgba(17, 19, 23, 0.7); line-height: 1.6; }
+.payment-method-note { display: grid; gap: 0.25rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.82rem; }
+.payment-method-note strong { color: var(--blue-dark); font-size: 0.72rem; letter-spacing: 0.09em; }
 .bank-transfer label { display: block; margin-bottom: 0.45rem; font-size: 0.85rem; font-weight: 700; }
 .bank-transfer input {
   width: 100%;
