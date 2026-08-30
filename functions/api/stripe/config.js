@@ -35,15 +35,29 @@ export function methodNotAllowed(allowed) {
   return jsonResponse({ error: "Méthode non autorisée." }, 405, { Allow: allowed });
 }
 
-function assertPreviewSandbox(env) {
-  if (env.CF_PAGES_BRANCH === "main" || env.CF_PAGES_BRANCH === "master") {
-    throw new StripeRequestError("Le paiement sandbox est désactivé sur la branche de production.", 403, "preview_only");
+export function getStripeEnvironment(env) {
+  const branch = typeof env.CF_PAGES_BRANCH === "string" ? env.CF_PAGES_BRANCH.trim() : "";
+  if (!branch) {
+    throw new StripeRequestError("Configuration Stripe incomplète.", 500, "configuration_error");
+  }
+  return branch === "main" || branch === "master" ? "live" : "test";
+}
+
+export function assertStripeEnvironment(env) {
+  const environment = getStripeEnvironment(env);
+  const secretPrefix = environment === "live" ? ["sk", "live"].join("_") + "_" : ["sk", "test"].join("_") + "_";
+  const publishablePrefix = environment === "live" ? ["pk", "live"].join("_") + "_" : ["pk", "test"].join("_") + "_";
+
+  if (
+    typeof env.STRIPE_SECRET_KEY !== "string" ||
+    !env.STRIPE_SECRET_KEY.startsWith(secretPrefix) ||
+    typeof env.STRIPE_PUBLISHABLE_KEY !== "string" ||
+    !env.STRIPE_PUBLISHABLE_KEY.startsWith(publishablePrefix)
+  ) {
+    throw new StripeRequestError("Configuration Stripe incohérente avec l’environnement.", 500, "configuration_error");
   }
 
-  const secretPrefix = ["sk", "test"].join("_") + "_";
-  if (env.STRIPE_SECRET_KEY && !env.STRIPE_SECRET_KEY.startsWith(secretPrefix)) {
-    throw new StripeRequestError("Seules les clés Stripe sandbox sont autorisées.", 403, "sandbox_only");
-  }
+  return environment;
 }
 
 export function getOffer(env, offerKey) {
@@ -81,11 +95,7 @@ export async function readJson(request) {
 }
 
 export async function stripeRequest(env, path, { method = "GET", params } = {}) {
-  if (!env.STRIPE_SECRET_KEY) {
-    throw new StripeRequestError("Configuration Stripe incomplète.", 500, "configuration_error");
-  }
-
-  assertPreviewSandbox(env);
+  assertStripeEnvironment(env);
 
   const headers = {
     Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
@@ -114,19 +124,12 @@ export async function stripeRequest(env, path, { method = "GET", params } = {}) 
 
 export async function onRequest({ request, env }) {
   if (request.method !== "GET") return methodNotAllowed("GET");
+  let environment;
   try {
-    assertPreviewSandbox(env);
+    environment = assertStripeEnvironment(env);
   } catch (error) {
-    return jsonResponse({ error: error.message }, error.status || 403);
-  }
-  if (!env.STRIPE_PUBLISHABLE_KEY) {
-    return jsonResponse({ error: "Configuration Stripe incomplète." }, 500);
+    return jsonResponse({ error: "Configuration Stripe incomplète." }, error.status || 500);
   }
 
-  const publishablePrefix = ["pk", "test"].join("_") + "_";
-  if (!env.STRIPE_PUBLISHABLE_KEY.startsWith(publishablePrefix)) {
-    return jsonResponse({ error: "Seules les clés Stripe sandbox sont autorisées." }, 403);
-  }
-
-  return jsonResponse({ publishableKey: env.STRIPE_PUBLISHABLE_KEY });
+  return jsonResponse({ publishableKey: env.STRIPE_PUBLISHABLE_KEY, environment });
 }

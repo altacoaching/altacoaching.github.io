@@ -26,6 +26,7 @@ export async function onRequest({ request, env }) {
       status: isPendingBankTransfer ? "bank_transfer_pending" : session.status,
       paymentStatus: session.payment_status,
       mode: session.mode,
+      livemode: Boolean(session.livemode),
       customerEmail: session.customer_details?.email || session.customer_email || null,
       offerKey: session.metadata?.offer_key || null
     });
