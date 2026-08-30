@@ -37,6 +37,7 @@ export async function onRequest({ request, env }) {
     sessionParams.set("payment_method_types[0]", "customer_balance");
     sessionParams.set("payment_method_options[customer_balance][funding_type]", "bank_transfer");
     sessionParams.set("payment_method_options[customer_balance][bank_transfer][type]", "eu_bank_transfer");
+    sessionParams.set("payment_method_options[customer_balance][bank_transfer][eu_bank_transfer][country]", "FR");
     sessionParams.set("success_url", `${origin}/paiement/retour/?session_id={CHECKOUT_SESSION_ID}`);
     sessionParams.set("cancel_url", `${origin}/paiement/?offre=${encodeURIComponent(offer.key)}`);
     sessionParams.set("metadata[offer_key]", offer.key);

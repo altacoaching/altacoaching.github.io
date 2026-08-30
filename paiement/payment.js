@@ -11,6 +11,9 @@
   const submitLabel = document.querySelector("#submit-label");
   const submitSpinner = document.querySelector("#submit-spinner");
   const expressSection = document.querySelector("#express-section");
+  const amazonPayButton = document.querySelector("#amazon-pay-button");
+  const klarnaSection = document.querySelector("#klarna-section");
+  const klarnaButton = document.querySelector("#klarna-button");
   const bankSection = document.querySelector("#bank-transfer-section");
   const bankButton = document.querySelector("#bank-transfer-button");
   const bankEmail = document.querySelector("#bank-email");
@@ -60,6 +63,7 @@
     document.querySelector("#summary-subtotal").textContent = formatted;
     document.querySelector("#summary-total").textContent = formatted;
     document.querySelector("#initial-review-benefit").hidden = !offer.recurring;
+    klarnaSection.hidden = offer.recurring;
     bankSection.hidden = offer.recurring;
     submitLabel.textContent = getSubmitLabel();
   };
@@ -102,7 +106,16 @@
 
       const expressElement = checkout.createExpressCheckoutElement({
         buttonHeight: 48,
-        layout: { maxColumns: 2, maxRows: 2, overflow: "auto" }
+        layout: { maxColumns: 2, maxRows: 2, overflow: "auto" },
+        paymentMethodOrder: ["applePay", "googlePay", "paypal", "link"],
+        paymentMethods: {
+          applePay: "always",
+          googlePay: "always",
+          paypal: "auto",
+          link: "auto",
+          amazonPay: "never",
+          klarna: "never"
+        }
       });
       expressElement.on("availablepaymentmethodschange", (event) => {
         const methods = event.paymentMethods || {};
@@ -154,6 +167,49 @@
       setMessage(error.message || "Le paiement n’a pas pu être confirmé.");
       setLoading(false);
     }
+  });
+
+  const redirectToHostedCheckout = async (endpoint, button, loadingLabel, fallbackMessage) => {
+    setMessage();
+    const defaultLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = loadingLabel;
+
+    try {
+      const data = await requestJson(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offerKey })
+      });
+      const redirectUrl = new URL(data.url);
+      const isStripeHost = redirectUrl.hostname === "stripe.com" || redirectUrl.hostname.endsWith(".stripe.com");
+      if (redirectUrl.protocol !== "https:" || !isStripeHost) {
+        throw new Error("Redirection de paiement invalide.");
+      }
+      window.location.assign(redirectUrl.href);
+    } catch (error) {
+      setMessage(error.message || fallbackMessage);
+      button.disabled = false;
+      button.textContent = defaultLabel;
+    }
+  };
+
+  amazonPayButton.addEventListener("click", () => {
+    redirectToHostedCheckout(
+      "/api/stripe/create-amazon-pay",
+      amazonPayButton,
+      "Ouverture d’Amazon Pay…",
+      "Amazon Pay n’est pas disponible actuellement."
+    );
+  });
+
+  klarnaButton.addEventListener("click", () => {
+    redirectToHostedCheckout(
+      "/api/stripe/create-klarna",
+      klarnaButton,
+      "Ouverture de Klarna…",
+      "Klarna n’est pas disponible actuellement."
+    );
   });
 
   bankButton.addEventListener("click", async () => {

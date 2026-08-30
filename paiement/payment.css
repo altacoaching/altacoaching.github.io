@@ -147,6 +147,7 @@ h1 {
   animation: spin 700ms linear infinite;
 }
 
+.provider-copy,
 .bank-transfer p { margin: 0 0 1rem; color: rgba(17, 19, 23, 0.7); line-height: 1.6; }
 .bank-transfer label { display: block; margin-bottom: 0.45rem; font-size: 0.85rem; font-weight: 700; }
 .bank-transfer input {
