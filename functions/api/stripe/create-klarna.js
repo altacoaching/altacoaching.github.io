@@ -1,6 +1,7 @@
 import {
   StripeRequestError,
   getOffer,
+  isValidEmail,
   jsonResponse,
   methodNotAllowed,
   readJson,
@@ -18,6 +19,9 @@ export async function onRequest({ request, env }) {
     if (offer.recurring) {
       return jsonResponse({ error: "Klarna n’est pas disponible pour cette offre." }, 400);
     }
+    if (!isValidEmail(body?.email)) {
+      return jsonResponse({ error: "Renseignez une adresse e-mail valide pour continuer." }, 400);
+    }
 
     const origin = new URL(request.url).origin;
     const params = new URLSearchParams();
@@ -25,6 +29,7 @@ export async function onRequest({ request, env }) {
     params.set("line_items[0][price]", offer.priceId);
     params.set("line_items[0][quantity]", "1");
     params.set("payment_method_types[0]", "klarna");
+    params.set("customer_email", body.email.trim().toLowerCase());
     params.set("success_url", `${origin}/paiement/retour/?session_id={CHECKOUT_SESSION_ID}`);
     params.set("cancel_url", `${origin}/paiement/?offre=${encodeURIComponent(offer.key)}`);
     params.set("metadata[offer_key]", offer.key);

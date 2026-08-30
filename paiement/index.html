@@ -34,19 +34,29 @@
 
       <div id="checkout-content" hidden>
         <section id="express-section" class="method-section is-pending" aria-labelledby="express-title">
-          <div class="section-label"><span>01</span><h2 id="express-title">PAIEMENT EXPRESS</h2></div>
+          <div class="section-label"><h2 id="express-title">PAIEMENT EXPRESS</h2></div>
           <div id="express-checkout-element"></div>
         </section>
 
         <section class="method-section" aria-labelledby="payment-element-title">
-          <div class="section-label"><span>02</span><h2 id="payment-element-title">AUTRES MOYENS</h2></div>
+          <div class="section-label"><h2 id="payment-element-title">AUTRES MOYENS DE PAIEMENT</h2></div>
           <form id="payment-form">
+            <h3 class="field-heading">Veuillez renseigner votre e-mail</h3>
+            <p class="field-help">Votre e-mail est nécessaire pour poursuivre le paiement.</p>
             <div id="contact-details-element"></div>
+            <h3 class="field-heading payment-choice-heading">Choisissez votre moyen de paiement</h3>
             <div id="payment-element"></div>
-            <p id="klarna-note" class="payment-method-note" hidden>
-              <strong>PAYER EN PLUSIEURS FOIS</strong>
-              <span>Klarna · Paiement en plusieurs fois selon éligibilité</span>
-            </p>
+            <section id="klarna-section" class="klarna-section" hidden aria-labelledby="klarna-title">
+              <h3 id="klarna-title">PAIEMENT EN PLUSIEURS FOIS</h3>
+              <label class="klarna-option" for="klarna-option">
+                <input id="klarna-option" type="radio" name="payment-flow" value="klarna">
+                <span>
+                  <strong>Klarna</strong>
+                  <small>Paiement en plusieurs fois selon éligibilité.</small>
+                </span>
+              </label>
+            </section>
+            <p id="email-error" class="email-error" hidden aria-live="polite">Renseignez une adresse e-mail valide pour continuer.</p>
             <button id="submit-payment" class="primary-action" type="submit" disabled>
               <span id="submit-label">Continuer</span>
               <span id="submit-spinner" class="spinner" hidden aria-hidden="true"></span>
@@ -55,7 +65,7 @@
         </section>
 
         <section id="bank-transfer-section" class="method-section bank-transfer" hidden aria-labelledby="bank-transfer-title">
-          <div class="section-label"><span>03</span><h2 id="bank-transfer-title">VIREMENT BANCAIRE</h2></div>
+          <div class="section-label"><h2 id="bank-transfer-title">VIREMENT BANCAIRE</h2></div>
           <p>Recevez les instructions officielles de virement sur la page sécurisée Stripe.</p>
           <label for="bank-email">Votre adresse e-mail</label>
           <input id="bank-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="client@example.com">
@@ -72,8 +82,10 @@
 
     <aside class="order-summary" aria-labelledby="summary-title">
       <p class="summary-kicker">VOTRE SÉLECTION</p>
-      <h2 id="summary-title">Chargement…</h2>
-      <p id="summary-price" class="summary-price">—</p>
+      <div id="summary-offer-highlight" class="summary-offer-highlight">
+        <h2 id="summary-title">Chargement…</h2>
+        <p id="summary-price" class="summary-price">—</p>
+      </div>
       <ul class="summary-benefits">
         <li>Paiement sécurisé</li>
         <li>Sans engagement</li>

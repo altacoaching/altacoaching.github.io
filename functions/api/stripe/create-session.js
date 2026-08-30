@@ -26,9 +26,6 @@ export async function onRequest({ request, env }) {
     params.set("payment_method_types[2]", "paypal");
     params.set("payment_method_types[3]", "sepa_debit");
     params.set("payment_method_types[4]", "amazon_pay");
-    if (!offer.recurring) {
-      params.set("payment_method_types[5]", "klarna");
-    }
     params.set("return_url", `${origin}/paiement/retour/?session_id={CHECKOUT_SESSION_ID}`);
     params.set("metadata[offer_key]", offer.key);
     params.set("locale", "fr");
