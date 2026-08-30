@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#004aad">
+  <title>Paiement sécurisé sandbox | ALTA Coaching</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./payment.css">
+  <script src="https://js.stripe.com/dahlia/stripe.js"></script>
+  <script src="./payment.js" defer></script>
+</head>
+<body>
+  <header class="payment-header">
+    <a class="payment-brand" href="../" aria-label="Retour à l’accueil ALTA Coaching">
+      <img src="../assets/images/logo-alta-transparent.png" width="220" height="100" alt="ALTA Coaching">
+    </a>
+    <span class="secure-label">Paiement sécurisé</span>
+    <a class="back-link" href="../">← Retour au site</a>
+  </header>
+
+  <div class="sandbox-banner" role="status">SANDBOX · AUCUN PAIEMENT RÉEL</div>
+
+  <main class="payment-layout">
+    <section class="payment-panel" aria-labelledby="payment-title">
+      <p class="kicker">ALTA COACHING · PAIEMENT</p>
+      <h1 id="payment-title">CHOISISSEZ VOTRE MODE DE PAIEMENT</h1>
+      <p class="payment-subtitle">Paiement sécurisé par Stripe</p>
+
+      <div id="checkout-loading" class="loading-card" role="status">Préparation de votre paiement sécurisé…</div>
+
+      <div id="checkout-content" hidden>
+        <section id="express-section" class="method-section is-pending" aria-labelledby="express-title">
+          <div class="section-label"><span>01</span><h2 id="express-title">PAIEMENT EXPRESS</h2></div>
+          <div id="express-checkout-element"></div>
+        </section>
+
+        <section class="method-section" aria-labelledby="payment-element-title">
+          <div class="section-label"><span>02</span><h2 id="payment-element-title">AUTRES MOYENS</h2></div>
+          <form id="payment-form">
+            <div id="contact-details-element"></div>
+            <div id="payment-element"></div>
+            <button id="submit-payment" class="primary-action" type="submit" disabled>
+              <span id="submit-label">Continuer</span>
+              <span id="submit-spinner" class="spinner" hidden aria-hidden="true"></span>
+            </button>
+          </form>
+        </section>
+
+        <section id="bank-transfer-section" class="method-section bank-transfer" hidden aria-labelledby="bank-transfer-title">
+          <div class="section-label"><span>03</span><h2 id="bank-transfer-title">VIREMENT BANCAIRE</h2></div>
+          <p>Recevez les instructions officielles de virement sur la page sécurisée Stripe.</p>
+          <label for="bank-email">Votre adresse e-mail</label>
+          <input id="bank-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="client@example.com">
+          <button id="bank-transfer-button" class="secondary-action" type="button">Payer par virement bancaire</button>
+        </section>
+
+        <div id="payment-message" class="payment-message" aria-live="polite"></div>
+        <div class="security-copy">
+          <strong>Paiement sécurisé par Stripe</strong>
+          <span>Vos informations bancaires ne transitent jamais par ALTA Coaching.</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="order-summary" aria-labelledby="summary-title">
+      <p class="summary-kicker">VOTRE SÉLECTION</p>
+      <h2 id="summary-title">Chargement…</h2>
+      <p id="summary-price" class="summary-price">—</p>
+      <ul class="summary-benefits">
+        <li>Paiement sécurisé</li>
+        <li>Sans engagement</li>
+        <li id="initial-review-benefit" hidden>Bilan initial gratuit après souscription</li>
+      </ul>
+      <div class="summary-totals">
+        <div><span>Sous-total</span><strong id="summary-subtotal">—</strong></div>
+        <div class="summary-total"><span>Total aujourd’hui</span><strong id="summary-total">—</strong></div>
+      </div>
+      <span class="summary-sandbox">SANDBOX · AUCUN PAIEMENT RÉEL</span>
+    </aside>
+  </main>
+</body>
+</html>
