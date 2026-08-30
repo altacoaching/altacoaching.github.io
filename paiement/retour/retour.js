@@ -4,7 +4,112 @@
   const title = document.querySelector("#return-title");
   const message = document.querySelector("#return-message");
   const email = document.querySelector("#return-email");
-  const initialReviewLink = document.querySelector("#initial-review-link");
+  const bookingLink = document.querySelector("#booking-link");
+  const initializedNamespaces = new Set();
+
+  const BOOKING_ROUTES = Object.freeze({
+    programme: Object.freeze({
+      copy: "Votre formule est activée.",
+      cta: "RÉSERVER MON BILAN INITIAL GRATUIT",
+      calLink: "maxime-alta-coaching-ghihbc/visio-ou-physique-bilan-de-prise-en-charge-initiale",
+      namespace: "visio-ou-physique-bilan-de-prise-en-charge-initiale"
+    }),
+    essentielle: Object.freeze({
+      copy: "Votre formule est activée.",
+      cta: "RÉSERVER MON BILAN INITIAL GRATUIT",
+      calLink: "maxime-alta-coaching-ghihbc/visio-ou-physique-bilan-de-prise-en-charge-initiale",
+      namespace: "visio-ou-physique-bilan-de-prise-en-charge-initiale"
+    }),
+    performance: Object.freeze({
+      copy: "Votre formule est activée.",
+      cta: "RÉSERVER MON BILAN INITIAL GRATUIT",
+      calLink: "maxime-alta-coaching-ghihbc/visio-ou-physique-bilan-de-prise-en-charge-initiale",
+      namespace: "visio-ou-physique-bilan-de-prise-en-charge-initiale"
+    }),
+    bilan: Object.freeze({
+      copy: "Votre paiement est confirmé. Choisissez maintenant votre créneau pour votre bilan initial.",
+      cta: "RÉSERVER MON BILAN INITIAL",
+      calLink: "maxime-alta-coaching-ghihbc/presentiel-bilan-initial-1h30",
+      namespace: "presentiel-bilan-initial-1h30"
+    }),
+    seance: Object.freeze({
+      copy: "Votre paiement est confirmé. Choisissez maintenant votre créneau de coaching.",
+      cta: "RÉSERVER MA SÉANCE",
+      calLink: "maxime-alta-coaching-ghihbc/presentiel-seance-de-coaching-60-min",
+      namespace: "presentiel-seance-de-coaching-60-min"
+    }),
+    pack5: Object.freeze({
+      copy: "Votre pack est activé. Vous pouvez maintenant réserver votre première séance.",
+      cta: "RÉSERVER MA PREMIÈRE SÉANCE",
+      calLink: "maxime-alta-coaching-ghihbc/presentiel-seance-de-coaching-60-min",
+      namespace: "presentiel-seance-de-coaching-60-min"
+    }),
+    pack10: Object.freeze({
+      copy: "Votre pack est activé. Vous pouvez maintenant réserver votre première séance.",
+      cta: "RÉSERVER MA PREMIÈRE SÉANCE",
+      calLink: "maxime-alta-coaching-ghihbc/presentiel-seance-de-coaching-60-min",
+      namespace: "presentiel-seance-de-coaching-60-min"
+    })
+  });
+
+  const ensureCalLoader = () => {
+    if (!window.Cal) {
+      (function (C, A, L) {
+        const push = (api, args) => api.q.push(args);
+        const documentRef = C.document;
+        C.Cal = C.Cal || function () {
+          const cal = C.Cal;
+          const args = arguments;
+          if (!cal.loaded) {
+            cal.ns = {};
+            cal.q = cal.q || [];
+            documentRef.head.appendChild(documentRef.createElement("script")).src = A;
+            cal.loaded = true;
+          }
+          if (args[0] === L) {
+            const api = function () { push(api, arguments); };
+            const namespace = args[1];
+            api.q = api.q || [];
+            if (typeof namespace === "string") {
+              cal.ns[namespace] = cal.ns[namespace] || api;
+              push(cal.ns[namespace], args);
+              push(cal, ["initNamespace", namespace]);
+            } else push(cal, args);
+            return;
+          }
+          push(cal, args);
+        };
+      })(window, "https://app.cal.com/embed/embed.js", "init");
+    }
+
+    window.Cal.config = window.Cal.config || {};
+    window.Cal.config.forwardQueryParams = true;
+  };
+
+  const initializeBookingPopup = (route) => {
+    ensureCalLoader();
+    if (initializedNamespaces.has(route.namespace)) return;
+
+    window.Cal("init", route.namespace, { origin: "https://app.cal.com" });
+    window.Cal.ns[route.namespace]("ui", {
+      hideEventTypeDetails: false,
+      layout: "month_view"
+    });
+    initializedNamespaces.add(route.namespace);
+  };
+
+  const showBookingLink = (route) => {
+    bookingLink.textContent = route.cta;
+    bookingLink.href = `https://cal.com/${route.calLink}`;
+    bookingLink.dataset.calLink = route.calLink;
+    bookingLink.dataset.calNamespace = route.namespace;
+    bookingLink.dataset.calConfig = JSON.stringify({
+      layout: "month_view",
+      useSlotsViewOnSmallScreen: "true"
+    });
+    bookingLink.hidden = false;
+    initializeBookingPopup(route);
+  };
 
   const render = (heading, copy, session) => {
     title.textContent = heading;
@@ -40,19 +145,20 @@
       }
 
       if (session.status === "complete" && (session.paymentStatus === "paid" || session.paymentStatus === "no_payment_required")) {
+        const bookingRoute = BOOKING_ROUTES[session.offerKey];
         render(
           "PAIEMENT CONFIRMÉ",
-          session.mode === "subscription" ? "Votre formule est activée." : "Votre paiement a bien été confirmé par Stripe.",
+          bookingRoute?.copy || "Votre paiement a bien été confirmé par Stripe.",
           session
         );
-        if (session.mode === "subscription") {
-          initialReviewLink.href = `${window.location.origin}/#reservation`;
-          initialReviewLink.hidden = false;
-        }
+        if (bookingRoute) showBookingLink(bookingRoute);
         return;
       }
 
-      if (session.status === "complete" && session.paymentStatus === "unpaid") {
+      if (
+        (session.status === "complete" && (session.paymentStatus === "unpaid" || session.paymentStatus === "processing")) ||
+        session.status === "processing"
+      ) {
         render("PAIEMENT EN COURS", "Stripe traite encore votre paiement. Son statut sera mis à jour dès confirmation.", session);
         return;
       }
