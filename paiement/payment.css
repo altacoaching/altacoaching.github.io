@@ -108,8 +108,17 @@ h1 {
 .method-section.is-pending { visibility: hidden; }
 
 .section-label { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 1rem; }
-.section-label span { color: var(--orange); font-size: 0.72rem; font-weight: 800; }
 .section-label h2 { margin: 0; font-size: clamp(1.35rem, 2.5vw, 2rem); letter-spacing: 0.015em; }
+
+.field-heading {
+  margin: 0 0 0.35rem;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.field-help { margin: 0 0 0.85rem; color: rgba(17, 19, 23, 0.62); font-size: 0.8rem; line-height: 1.45; }
+.payment-choice-heading { margin: 1.15rem 0 0.75rem; }
 
 #express-checkout-element,
 #contact-details-element,
@@ -147,10 +156,26 @@ h1 {
   animation: spin 700ms linear infinite;
 }
 
-.payment-method-note,
 .bank-transfer p { margin: 0 0 1rem; color: rgba(17, 19, 23, 0.7); line-height: 1.6; }
-.payment-method-note { display: grid; gap: 0.25rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.82rem; }
-.payment-method-note strong { color: var(--blue-dark); font-size: 0.72rem; letter-spacing: 0.09em; }
+.klarna-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.klarna-section h3 { margin: 0 0 0.75rem; color: var(--blue-dark); font-size: 0.72rem; letter-spacing: 0.09em; }
+.klarna-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--white);
+  cursor: pointer;
+}
+.klarna-option:focus-within { outline: 3px solid rgba(0, 74, 173, 0.2); border-color: var(--blue); }
+.klarna-option.is-selected { border-color: var(--blue); }
+.klarna-option input { margin: 0.2rem 0 0; accent-color: var(--blue); }
+.klarna-option span { display: grid; gap: 0.2rem; min-width: 0; }
+.klarna-option strong { color: var(--ink); font-size: 0.88rem; }
+.klarna-option small { color: rgba(17, 19, 23, 0.66); font-size: 0.78rem; line-height: 1.4; }
+.email-error { margin: 0.8rem 0 0; color: #9b1c1c; font-size: 0.82rem; font-weight: 600; line-height: 1.45; }
 .bank-transfer label { display: block; margin-bottom: 0.45rem; font-size: 0.85rem; font-weight: 700; }
 .bank-transfer input {
   width: 100%;
@@ -191,6 +216,17 @@ h1 {
 .order-summary > * { position: relative; z-index: 1; }
 .order-summary h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1; }
 .summary-price { margin: 0.85rem 0 1.8rem; color: var(--orange); font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); }
+.summary-offer-highlight { position: relative; overflow: hidden; }
+.summary-offer-highlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  transform: translateX(-120%);
+  background: linear-gradient(90deg, transparent, rgba(252, 142, 76, 0.18), rgba(252, 142, 76, 0.38), transparent);
+}
+.summary-offer-highlight.is-sweeping::after { animation: alta-summary-sweep 480ms ease-out; }
 .summary-benefits { display: grid; gap: 0.7rem; margin: 0; padding: 1.2rem 0 1.6rem; list-style: none; border-top: 1px solid rgba(255,255,255,0.25); }
 .summary-benefits li::before { content: "✓"; margin-right: 0.6rem; color: var(--orange); font-weight: 900; }
 .summary-totals { display: grid; gap: 0.8rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.25); }
@@ -212,6 +248,10 @@ h1 {
 .return-actions .secondary-link { background: var(--surface); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes alta-summary-sweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
 
 @media (max-width: 900px) {
   .payment-layout { grid-template-columns: minmax(0, 1fr); }
@@ -235,4 +275,5 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .summary-offer-highlight::after { display: none; }
 }
