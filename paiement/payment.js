@@ -16,6 +16,7 @@
   const bankSection = document.querySelector("#bank-transfer-section");
   const bankButton = document.querySelector("#bank-transfer-button");
   const bankEmail = document.querySelector("#bank-email");
+  const sandboxIndicators = document.querySelectorAll(".sandbox-banner, .summary-sandbox");
   let checkoutActions = null;
   let offer = null;
   let canConfirm = false;
@@ -49,6 +50,15 @@
   };
 
   const setMessage = (text = "") => { message.textContent = text; };
+
+  const applyStripeEnvironment = (environment) => {
+    if (environment !== "live" && environment !== "test") {
+      throw new Error("La configuration du paiement sécurisé est invalide.");
+    }
+    sandboxIndicators.forEach((indicator) => {
+      indicator.hidden = environment === "live";
+    });
+  };
 
   const updateSubmitState = () => {
     submitButton.disabled = isSubmitting || !checkoutActions || !emailIsValid || !canConfirm;
@@ -101,6 +111,7 @@
       if (!window.Stripe || !config.publishableKey || !sessionPayload.clientSecret) {
         throw new Error("Le paiement sécurisé est temporairement indisponible.");
       }
+      applyStripeEnvironment(config.environment);
 
       offer = sessionPayload.offer;
       renderOffer();

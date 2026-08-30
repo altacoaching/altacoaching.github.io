@@ -1,5 +1,6 @@
 import {
   StripeRequestError,
+  getStripeEnvironment,
   getOffer,
   isValidEmail,
   jsonResponse,
@@ -14,6 +15,7 @@ export async function onRequest({ request, env }) {
   try {
     const body = await readJson(request);
     const offer = getOffer(env, body?.offerKey);
+    const environment = getStripeEnvironment(env);
 
     if (!offer) return jsonResponse({ error: "Offre inconnue." }, 400);
     if (!offer.bankTransfer || offer.recurring) {
@@ -25,7 +27,7 @@ export async function onRequest({ request, env }) {
 
     const customerParams = new URLSearchParams();
     customerParams.set("email", body.email.trim().toLowerCase());
-    customerParams.set("metadata[source]", "alta_payment_sandbox");
+    customerParams.set("metadata[source]", environment === "live" ? "alta_payment_live" : "alta_payment_sandbox");
     const customer = await stripeRequest(env, "/v1/customers", { method: "POST", params: customerParams });
 
     const origin = new URL(request.url).origin;
