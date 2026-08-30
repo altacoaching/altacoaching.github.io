@@ -11,11 +11,8 @@
   const submitLabel = document.querySelector("#submit-label");
   const submitSpinner = document.querySelector("#submit-spinner");
   const expressSection = document.querySelector("#express-section");
-  const klarnaSection = document.querySelector("#klarna-section");
-  const klarnaOption = document.querySelector("#klarna-option");
-  const klarnaOptionLabel = document.querySelector(".klarna-option");
   const emailError = document.querySelector("#email-error");
-  const summaryHighlight = document.querySelector("#summary-offer-highlight");
+  const orderSummary = document.querySelector(".order-summary");
   const bankSection = document.querySelector("#bank-transfer-section");
   const bankButton = document.querySelector("#bank-transfer-button");
   const bankEmail = document.querySelector("#bank-email");
@@ -24,9 +21,8 @@
   let canConfirm = false;
   let currentEmail = "";
   let emailIsValid = false;
-  let selectedFlow = "stripe";
   let isSubmitting = false;
-  let lastSweptOfferKey = null;
+  let lastShinedOfferKey = null;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) && value.length <= 254;
@@ -55,8 +51,7 @@
   const setMessage = (text = "") => { message.textContent = text; };
 
   const updateSubmitState = () => {
-    const methodIsReady = selectedFlow === "klarna" ? true : canConfirm;
-    submitButton.disabled = isSubmitting || !checkoutActions || !emailIsValid || !methodIsReady;
+    submitButton.disabled = isSubmitting || !checkoutActions || !emailIsValid || !canConfirm;
   };
 
   const setLoading = (active) => {
@@ -72,12 +67,12 @@
     return offer.recurring ? `S’ABONNER POUR ${price} / MOIS` : `PAYER ${price}`;
   };
 
-  const triggerSummarySweep = (key) => {
-    if (!key || key === lastSweptOfferKey) return;
-    lastSweptOfferKey = key;
+  const triggerSummaryShine = (key) => {
+    if (!key || key === lastShinedOfferKey) return;
+    lastShinedOfferKey = key;
     if (prefersReducedMotion.matches) return;
-    summaryHighlight.classList.remove("is-sweeping");
-    window.requestAnimationFrame(() => summaryHighlight.classList.add("is-sweeping"));
+    orderSummary.classList.remove("is-sweeping");
+    window.requestAnimationFrame(() => orderSummary.classList.add("is-sweeping"));
   };
 
   const renderOffer = () => {
@@ -87,12 +82,6 @@
     document.querySelector("#summary-subtotal").textContent = formatted;
     document.querySelector("#summary-total").textContent = formatted;
     document.querySelector("#initial-review-benefit").hidden = !offer.recurring;
-    klarnaSection.hidden = offer.recurring;
-    if (offer.recurring && selectedFlow === "klarna") {
-      selectedFlow = "stripe";
-      klarnaOption.checked = false;
-      klarnaOptionLabel.classList.remove("is-selected");
-    }
     bankSection.hidden = offer.recurring;
     submitLabel.textContent = getSubmitLabel();
     updateSubmitState();
@@ -143,8 +132,7 @@
           googlePay: "always",
           paypal: "auto",
           link: "auto",
-          amazonPay: "never",
-          klarna: "never"
+          amazonPay: "never"
         }
       });
       expressElement.on("availablepaymentmethodschange", (event) => {
@@ -170,14 +158,6 @@
         }
       });
       paymentElement.mount("#payment-element");
-      paymentElement.on("change", () => {
-        if (selectedFlow === "klarna") {
-          selectedFlow = "stripe";
-          klarnaOption.checked = false;
-          klarnaOptionLabel.classList.remove("is-selected");
-        }
-        updateSubmitState();
-      });
 
       const actionsResult = await checkout.loadActions();
       if (actionsResult.type === "error") throw new Error(actionsResult.error.message);
@@ -204,7 +184,7 @@
 
       loading.hidden = true;
       content.hidden = false;
-      triggerSummarySweep(offer.key);
+      triggerSummaryShine(offer.key);
     } catch (error) {
       loading.textContent = error.message || "Le paiement sécurisé est temporairement indisponible.";
       loading.setAttribute("role", "alert");
@@ -222,37 +202,16 @@
     setLoading(true);
 
     try {
-      if (selectedFlow === "klarna") {
-        const data = await requestJson("/api/stripe/create-klarna", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ offerKey, email: currentEmail })
-        });
-        const redirectUrl = new URL(data.url);
-        const isStripeHost = redirectUrl.hostname === "stripe.com" || redirectUrl.hostname.endsWith(".stripe.com");
-        if (redirectUrl.protocol !== "https:" || !isStripeHost) {
-          throw new Error("Redirection de paiement invalide.");
-        }
-        window.location.assign(redirectUrl.href);
-      } else {
-        const result = await checkoutActions.confirm();
-        if (result?.type === "error") throw new Error(result.error.message);
-      }
+      const result = await checkoutActions.confirm();
+      if (result?.type === "error") throw new Error(result.error.message);
     } catch (error) {
       setMessage(error.message || "Le paiement n’a pas pu être confirmé.");
       setLoading(false);
     }
   });
 
-  klarnaOption.addEventListener("change", () => {
-    if (!klarnaOption.checked) return;
-    selectedFlow = "klarna";
-    klarnaOptionLabel.classList.add("is-selected");
-    updateSubmitState();
-  });
-
-  summaryHighlight.addEventListener("animationend", () => {
-    summaryHighlight.classList.remove("is-sweeping");
+  orderSummary.addEventListener("animationend", () => {
+    orderSummary.classList.remove("is-sweeping");
   });
 
   bankButton.addEventListener("click", async () => {

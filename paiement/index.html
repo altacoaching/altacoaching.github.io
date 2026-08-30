@@ -46,16 +46,6 @@
             <div id="contact-details-element"></div>
             <h3 class="field-heading payment-choice-heading">Choisissez votre moyen de paiement</h3>
             <div id="payment-element"></div>
-            <section id="klarna-section" class="klarna-section" hidden aria-labelledby="klarna-title">
-              <h3 id="klarna-title">PAIEMENT EN PLUSIEURS FOIS</h3>
-              <label class="klarna-option" for="klarna-option">
-                <input id="klarna-option" type="radio" name="payment-flow" value="klarna">
-                <span>
-                  <strong>Klarna</strong>
-                  <small>Paiement en plusieurs fois selon éligibilité.</small>
-                </span>
-              </label>
-            </section>
             <p id="email-error" class="email-error" hidden aria-live="polite">Renseignez une adresse e-mail valide pour continuer.</p>
             <button id="submit-payment" class="primary-action" type="submit" disabled>
               <span id="submit-label">Continuer</span>
@@ -82,10 +72,8 @@
 
     <aside class="order-summary" aria-labelledby="summary-title">
       <p class="summary-kicker">VOTRE SÉLECTION</p>
-      <div id="summary-offer-highlight" class="summary-offer-highlight">
-        <h2 id="summary-title">Chargement…</h2>
-        <p id="summary-price" class="summary-price">—</p>
-      </div>
+      <h2 id="summary-title">Chargement…</h2>
+      <p id="summary-price" class="summary-price">—</p>
       <ul class="summary-benefits">
         <li>Paiement sécurisé</li>
         <li>Sans engagement</li>
