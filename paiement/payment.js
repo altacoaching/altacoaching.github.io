@@ -11,9 +11,7 @@
   const submitLabel = document.querySelector("#submit-label");
   const submitSpinner = document.querySelector("#submit-spinner");
   const expressSection = document.querySelector("#express-section");
-  const amazonPayButton = document.querySelector("#amazon-pay-button");
-  const klarnaSection = document.querySelector("#klarna-section");
-  const klarnaButton = document.querySelector("#klarna-button");
+  const klarnaNote = document.querySelector("#klarna-note");
   const bankSection = document.querySelector("#bank-transfer-section");
   const bankButton = document.querySelector("#bank-transfer-button");
   const bankEmail = document.querySelector("#bank-email");
@@ -53,7 +51,7 @@
   const getSubmitLabel = () => {
     if (!offer) return "Continuer";
     const price = formatPrice(offer.amount, offer.currency, false);
-    return offer.recurring ? `S’abonner pour ${price} / mois` : `Payer ${price}`;
+    return offer.recurring ? `S’ABONNER POUR ${price} / MOIS` : `PAYER ${price}`;
   };
 
   const renderOffer = () => {
@@ -63,7 +61,7 @@
     document.querySelector("#summary-subtotal").textContent = formatted;
     document.querySelector("#summary-total").textContent = formatted;
     document.querySelector("#initial-review-benefit").hidden = !offer.recurring;
-    klarnaSection.hidden = offer.recurring;
+    klarnaNote.hidden = offer.recurring;
     bankSection.hidden = offer.recurring;
     submitLabel.textContent = getSubmitLabel();
   };
@@ -126,7 +124,21 @@
 
       const contactElement = checkout.createContactDetailsElement();
       contactElement.mount("#contact-details-element");
-      const paymentElement = checkout.createPaymentElement();
+      const paymentElement = checkout.createPaymentElement({
+        layout: {
+          type: "accordion",
+          radios: "always",
+          visibleAccordionItemsCount: 0
+        },
+        paymentMethodOrder: offer.recurring
+          ? ["card", "amazon_pay", "sepa_debit"]
+          : ["card", "amazon_pay", "sepa_debit", "klarna"],
+        wallets: {
+          applePay: "never",
+          googlePay: "never",
+          link: "never"
+        }
+      });
       paymentElement.mount("#payment-element");
 
       const actionsResult = await checkout.loadActions();
@@ -167,49 +179,6 @@
       setMessage(error.message || "Le paiement n’a pas pu être confirmé.");
       setLoading(false);
     }
-  });
-
-  const redirectToHostedCheckout = async (endpoint, button, loadingLabel, fallbackMessage) => {
-    setMessage();
-    const defaultLabel = button.textContent;
-    button.disabled = true;
-    button.textContent = loadingLabel;
-
-    try {
-      const data = await requestJson(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ offerKey })
-      });
-      const redirectUrl = new URL(data.url);
-      const isStripeHost = redirectUrl.hostname === "stripe.com" || redirectUrl.hostname.endsWith(".stripe.com");
-      if (redirectUrl.protocol !== "https:" || !isStripeHost) {
-        throw new Error("Redirection de paiement invalide.");
-      }
-      window.location.assign(redirectUrl.href);
-    } catch (error) {
-      setMessage(error.message || fallbackMessage);
-      button.disabled = false;
-      button.textContent = defaultLabel;
-    }
-  };
-
-  amazonPayButton.addEventListener("click", () => {
-    redirectToHostedCheckout(
-      "/api/stripe/create-amazon-pay",
-      amazonPayButton,
-      "Ouverture d’Amazon Pay…",
-      "Amazon Pay n’est pas disponible actuellement."
-    );
-  });
-
-  klarnaButton.addEventListener("click", () => {
-    redirectToHostedCheckout(
-      "/api/stripe/create-klarna",
-      klarnaButton,
-      "Ouverture de Klarna…",
-      "Klarna n’est pas disponible actuellement."
-    );
   });
 
   bankButton.addEventListener("click", async () => {
