@@ -4,8 +4,10 @@
   const title = document.querySelector("#return-title");
   const message = document.querySelector("#return-message");
   const email = document.querySelector("#return-email");
-  const bookingLink = document.querySelector("#booking-link");
+  const bookingButton = document.querySelector("#booking-button");
   const initializedNamespaces = new Set();
+  let activeBookingRoute = null;
+  let bookingAcceptedHandled = false;
 
   const BOOKING_ROUTES = Object.freeze({
     programme: Object.freeze({
@@ -86,7 +88,18 @@
     window.Cal.config.forwardQueryParams = true;
   };
 
-  const initializeBookingPopup = (route) => {
+  const getBookingStorageKey = (sessionId) => `alta:booking-confirmed:${sessionId}`;
+
+  const getAcceptedBooking = (sessionId) => {
+    try {
+      const storedBooking = JSON.parse(window.sessionStorage.getItem(getBookingStorageKey(sessionId)) || "null");
+      return storedBooking?.status === "accepted" ? storedBooking : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const initializeBookingPopup = (route, sessionId) => {
     ensureCalLoader();
     if (initializedNamespaces.has(route.namespace)) return;
 
@@ -95,30 +108,76 @@
       hideEventTypeDetails: false,
       layout: "month_view"
     });
+    window.Cal.ns[route.namespace]("on", {
+      action: "bookingSuccessfulV2",
+      callback: (event) => {
+        const bookingStatus = String(event?.detail?.data?.status || "").toLowerCase();
+        if (bookingStatus !== "accepted" || bookingAcceptedHandled) return;
+
+        bookingAcceptedHandled = true;
+        const bookingUid = String(event?.detail?.data?.uid || "");
+        try {
+          window.sessionStorage.setItem(
+            getBookingStorageKey(sessionId),
+            JSON.stringify({ status: "accepted", uid: bookingUid })
+          );
+        } catch {
+          bookingAcceptedHandled = false;
+          return;
+        }
+
+        window.Cal.ns[route.namespace]("closeModal");
+        window.setTimeout(() => window.location.reload(), 220);
+      }
+    });
     initializedNamespaces.add(route.namespace);
   };
 
-  const showBookingLink = (route) => {
-    bookingLink.textContent = route.cta;
-    bookingLink.href = `https://cal.com/${route.calLink}`;
-    bookingLink.dataset.calLink = route.calLink;
-    bookingLink.dataset.calNamespace = route.namespace;
-    bookingLink.dataset.calConfig = JSON.stringify({
+  const showBookingButton = (route, sessionId) => {
+    activeBookingRoute = route;
+    bookingButton.textContent = route.cta;
+    bookingButton.dataset.calLink = route.calLink;
+    bookingButton.dataset.calNamespace = route.namespace;
+    bookingButton.dataset.calConfig = JSON.stringify({
       layout: "month_view",
       useSlotsViewOnSmallScreen: "true"
     });
-    bookingLink.hidden = false;
-    initializeBookingPopup(route);
+    bookingButton.hidden = false;
+    initializeBookingPopup(route, sessionId);
   };
 
   const render = (heading, copy, session) => {
     title.textContent = heading;
     message.textContent = copy;
+    message.hidden = false;
+    email.hidden = true;
     if (session?.customerEmail) {
       email.textContent = `Confirmation envoyée à ${session.customerEmail}`;
       email.hidden = false;
     }
   };
+
+  const renderBooked = () => {
+    title.textContent = "CRÉNEAU RÉSERVÉ";
+    message.textContent = "";
+    message.hidden = true;
+    email.textContent = "";
+    email.hidden = true;
+    bookingButton.hidden = true;
+  };
+
+  bookingButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (!activeBookingRoute || !window.Cal?.ns?.[activeBookingRoute.namespace]) return;
+    window.Cal.ns[activeBookingRoute.namespace]("modal", {
+      calLink: activeBookingRoute.calLink,
+      config: {
+        layout: "month_view",
+        useSlotsViewOnSmallScreen: "true"
+      }
+    });
+  });
 
   const loadStatus = async () => {
     const sessionId = new URLSearchParams(window.location.search).get("session_id");
@@ -145,13 +204,18 @@
       }
 
       if (session.status === "complete" && (session.paymentStatus === "paid" || session.paymentStatus === "no_payment_required")) {
+        if (getAcceptedBooking(sessionId)) {
+          renderBooked();
+          return;
+        }
+
         const bookingRoute = BOOKING_ROUTES[session.offerKey];
         render(
           "PAIEMENT CONFIRMÉ",
           bookingRoute?.copy || "Votre paiement a bien été confirmé par Stripe.",
           session
         );
-        if (bookingRoute) showBookingLink(bookingRoute);
+        if (bookingRoute) showBookingButton(bookingRoute, sessionId);
         return;
       }
 
