@@ -1243,8 +1243,9 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 }
 
 @media (max-width: 430px) {
-  .site-header .nav { height: 72px; }
-  .site-header.is-scrolled .nav { height: 64px; }
+  .site-header { --mobile-header-height: 72px; }
+  .site-header.is-scrolled { --mobile-header-height: 64px; }
+  .site-header .nav { height: var(--mobile-header-height); }
   .site-header .brand { width: 92px; flex: 0 0 92px; }
   .site-header .menu-toggle {
     width: 44px;
@@ -1256,12 +1257,18 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   }
   .site-header.is-scrolled .menu-toggle { background: rgba(0,74,173,.07); }
   .site-header .nav-links {
-    inset: .5rem;
+    top: calc(var(--mobile-header-height) + .5rem);
+    right: .5rem;
+    bottom: .5rem;
+    left: .5rem;
+    max-height: calc(100dvh - var(--mobile-header-height) - 1rem);
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: .25rem;
-    padding: 5.75rem 1rem 1.5rem;
+    padding: 1rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     border: 1px solid rgba(255,255,255,.18);
     border-radius: 18px;
     background: rgba(0,74,173,.98);
@@ -1273,9 +1280,15 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
     width: min(100%, 240px);
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     padding-inline: .25rem;
     border-bottom: 0;
     text-align: center;
+  }
+  .site-header .nav-links .nav-cta {
+    width: min(100%, 240px);
+    flex: 0 0 auto;
+    margin: 1rem auto 0;
   }
   .site-header .nav-links > a::after {
     content: "";
@@ -1289,6 +1302,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   }
   .menu-open .site-header .brand img { filter: brightness(0) invert(1) !important; }
   .menu-open .site-header .menu-toggle { background: rgba(255,255,255,.12); }
+  body.menu-open .mobile-cta { opacity: 0; pointer-events: none; transform: translateY(120%); }
 
   .about-qualifications-picture {
     display: block;
@@ -1380,6 +1394,11 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .tally-shell { padding: .5rem; }
   .home-page-v34 #questionnaire .questionnaire-grid { gap: .75rem; }
   .home-page-v34 #questionnaire .section-heading { margin-bottom: 0; }
+  .home-page-v34 .qualification-v34 {
+    margin-top: 1.5rem;
+    padding-top: 0;
+    border-top: 0;
+  }
 
   .footer-grid-v34 { grid-template-columns: 1fr; }
   .footer-grid-v34 .footer-brand { grid-column: auto; }
