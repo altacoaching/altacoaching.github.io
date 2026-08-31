@@ -139,7 +139,16 @@ const scrollActiveGroups = [
   [...document.querySelectorAll("#formules .price-card")]
 ].filter((group) => group.length);
 const scrollActiveMedia = window.matchMedia("(max-width: 430px)");
+const activeScrollCardByGroup = new WeakMap();
+let mobileHapticsArmed = false;
 let scrollActiveFrame = 0;
+
+function armMobileHaptics() {
+  mobileHapticsArmed = true;
+  ["pointerdown", "touchstart", "click"].forEach((eventName) => {
+    window.removeEventListener(eventName, armMobileHaptics);
+  });
+}
 
 function updateScrollActiveGroups() {
   const enabled = scrollActiveMedia.matches && !prefersReducedMotion;
@@ -162,9 +171,23 @@ function updateScrollActiveGroups() {
       });
     }
 
+    const nextActiveCard = closestDistance <= activationDistance ? closestCard : null;
+    const previousActiveCard = activeScrollCardByGroup.get(group) || null;
+
     group.forEach((card) => {
-      card.classList.toggle("is-scroll-active", card === closestCard && closestDistance <= activationDistance);
+      card.classList.toggle("is-scroll-active", card === nextActiveCard);
     });
+
+    if (
+      nextActiveCard &&
+      nextActiveCard !== previousActiveCard &&
+      enabled &&
+      mobileHapticsArmed &&
+      typeof navigator.vibrate === "function"
+    ) {
+      navigator.vibrate(12);
+    }
+    activeScrollCardByGroup.set(group, nextActiveCard);
   });
 }
 
@@ -177,6 +200,9 @@ function scheduleScrollActiveGroups() {
 }
 
 if (scrollActiveGroups.length) {
+  ["pointerdown", "touchstart", "click"].forEach((eventName) => {
+    window.addEventListener(eventName, armMobileHaptics, { once: true, passive: true });
+  });
   scheduleScrollActiveGroups();
   window.addEventListener("load", scheduleScrollActiveGroups, { once: true });
   window.addEventListener("pageshow", scheduleScrollActiveGroups);

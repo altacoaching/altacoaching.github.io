@@ -133,9 +133,8 @@ h1 em, h2 em, .problem-answer em { color: var(--color-accent); font-style: norma
 
 /* 11 Coaching */
 .service-list { border-top: 1px solid var(--color-border); }
-.service-row { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: var(--space-4); align-items: center; min-height: 180px; padding: 1.4rem 0; border-bottom: 1px solid var(--color-border); transition: padding .25s ease, background .25s ease; }
+.service-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-4); align-items: center; min-height: 180px; padding: 1.4rem 0; border-bottom: 1px solid var(--color-border); transition: padding .25s ease, background .25s ease; }
 .service-row:hover { padding-inline: 1rem; background: #fff; }
-.service-row > span { color: var(--color-accent); font-size: .72rem; font-weight: 800; }
 .service-row p { max-width: 650px; margin: .5rem 0 .2rem; }
 .service-row small { color: var(--color-muted); }
 .service-row > b { color: var(--color-primary); font-size: .72rem; text-transform: uppercase; }
@@ -363,8 +362,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .hero-number { font-size: 9rem; }
   .discipline-marquee { justify-content: flex-start; overflow-x: auto; }
   .problem-answer { font-size: 3.2rem; }
-  .service-row { grid-template-columns: 40px 1fr; }
-  .service-row > b { grid-column: 2; }
+  .service-row { grid-template-columns: minmax(0, 1fr) auto; }
   .timeline, .audience-grid, .why-grid, .trust-grid { grid-template-columns: 1fr; }
   .audience-grid p, .audience-grid p:nth-child(3n) { border-right: 0; }
   .why-grid article, .trust-grid article { border-right: 0; border-bottom: 1px solid var(--color-border); }
@@ -678,8 +676,6 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 .service-row:focus-visible h3 { color: #fff; transform: translateX(8px); }
 .service-row:hover small,
 .service-row:focus-visible small { color: rgba(255,255,255,.78); }
-.service-row:hover > span,
-.service-row:focus-visible > span,
 .service-row:hover > b,
 .service-row:focus-visible > b { color: #fc8e4c; }
 .service-row:hover > b i,
@@ -1192,12 +1188,12 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .hero-stamp { right: .35rem; }
 
   .service-row {
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: .85rem;
     min-height: 0;
     padding-block: 1.4rem;
   }
-  .service-row > b { grid-column: 2; justify-self: start; }
+  .service-row > b { justify-self: start; }
   .service-row h3 { font-size: clamp(2.7rem, 9vw, 4.8rem); line-height: .9; }
 
   .pricing-grid { gap: 1rem; }
@@ -1357,7 +1353,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
     hyphens: none;
   }
   #formules .section-heading h2 em { display: block; margin-top: .08em; }
-  .service-row { grid-template-columns: 28px minmax(0, 1fr); gap: .55rem; }
+  .service-row { grid-template-columns: minmax(0, 1fr) auto; gap: .55rem; }
   .service-row h3 { font-size: clamp(2.35rem, 12vw, 3.45rem); }
   .service-row p { margin-top: .65rem; }
   .service-row:hover,
@@ -1382,6 +1378,8 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   #my-cal-inline-15min,
   .home-page-v34 #my-cal-inline-15min { height: 720px; }
   .tally-shell { padding: .5rem; }
+  .home-page-v34 #questionnaire .questionnaire-grid { gap: .75rem; }
+  .home-page-v34 #questionnaire .section-heading { margin-bottom: 0; }
 
   .footer-grid-v34 { grid-template-columns: 1fr; }
   .footer-grid-v34 .footer-brand { grid-column: auto; }
@@ -1424,7 +1422,6 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   #coaching .service-row.is-scroll-active h3,
   #coaching .service-row.is-scroll-active p { color: #fff; }
   #coaching .service-row.is-scroll-active small { color: rgba(255,255,255,.78); }
-  #coaching .service-row.is-scroll-active > span,
   #coaching .service-row.is-scroll-active > b { color: #fc8e4c; }
   #coaching .service-row.is-scroll-active > b { transform: translateX(5px); }
   #coaching .service-row h3,
