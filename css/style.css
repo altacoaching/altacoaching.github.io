@@ -1239,7 +1239,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
     margin-inline: 0;
     padding-block: 2.75rem;
   }
-  .home-page-v34 .after-step-light { margin-block: 1.25rem; }
+  .home-page-v34 .after-step-light { margin-block: -1.25rem; }
 }
 
 @media (max-width: 520px) {
