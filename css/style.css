@@ -10,9 +10,6 @@
   --color-surface: #f4f4f0;
   --color-muted: #666a70;
   --color-border: rgba(0, 74, 173, .18);
-  --color-performance-gold: #b48732;
-  --color-performance-gold-light: #ead7a6;
-  --color-performance-gold-dark: #684b14;
   --color-performance-gold-tint: #fbf7ed;
   --font-display: "Anton", "Arial Narrow", Impact, sans-serif;
   --font-body: Inter, Arial, Helvetica, sans-serif;
@@ -1705,45 +1702,7 @@ body.question-dialog-open { overflow: hidden; }
   .question-form .button { width: 100%; }
 }
 
-/* Performance premium theme */
-#formules .price-card.price-performance {
-  border: 2px solid var(--color-performance-gold);
-  background: linear-gradient(145deg, #fff 0%, var(--color-performance-gold-tint) 100%);
-  box-shadow: 0 24px 64px rgba(104,75,20,.14), 0 8px 0 rgba(180,135,50,.16);
-}
-#formules .price-card.price-performance::after { background: var(--color-performance-gold); }
-#formules .price-card.price-performance .plan-kicker,
-#formules .price-card.price-performance h3,
-#formules .price-card.price-performance .price,
-#formules .price-card.price-performance .price small { color: var(--color-performance-gold-dark); }
-#formules .price-card.price-performance ul { border-color: rgba(104,75,20,.42); }
-#formules .price-card.price-performance li { border-color: rgba(104,75,20,.28); }
-#formules .price-card.price-performance li::before { color: var(--color-performance-gold); }
-#formules .price-card.price-performance .button-outline {
-  border-color: var(--color-performance-gold-dark);
-  color: var(--color-performance-gold-dark);
-}
-#formules .price-card.price-performance:hover,
-#formules .price-card.price-performance:focus-within,
-#formules .price-card.price-performance.reveal.is-visible.is-scroll-active {
-  border-color: var(--color-performance-gold-dark);
-  box-shadow: 0 30px 74px rgba(104,75,20,.2), 0 9px 0 rgba(180,135,50,.22);
-}
-#formules .price-card.price-performance .button-outline:hover,
-#formules .price-card.price-performance .button-outline:focus-visible {
-  border-color: var(--color-performance-gold-dark);
-  background: var(--color-performance-gold-dark);
-  color: #fff;
-}
+/* Performance: soft premium background only */
+#formules .price-card.price-performance,
 #formules .comparison-wrap th:nth-child(4),
-#formules .comparison-wrap td:nth-child(4) {
-  border-inline: 1px solid rgba(180,135,50,.28);
-  background: var(--color-performance-gold-tint);
-  color: var(--color-performance-gold-dark);
-  font-weight: 800;
-}
-#formules .comparison-wrap thead th:nth-child(4) {
-  border-top: 4px solid var(--color-performance-gold);
-  background: var(--color-performance-gold-light);
-}
-#formules .comparison-wrap tbody tr:hover td:nth-child(4) { background: #f4e8c9; }
+#formules .comparison-wrap td:nth-child(4) { background: var(--color-performance-gold-tint); }
