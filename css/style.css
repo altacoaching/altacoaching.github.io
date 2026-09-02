@@ -1402,6 +1402,18 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   .after-sequence,
   .footer-signature { width: calc(100% - 1.5rem); }
 
+  .home-page-v34 .after-sequence,
+  .home-page-v34 #coaching .service-list {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+  }
+  .home-page-v34 #coaching { overflow-x: clip; }
+  .home-page-v34 #coaching .service-row {
+    width: 100%;
+    padding-inline: 1.25rem;
+  }
+
   .section { padding-block: clamp(3.25rem, 13vw, 4.25rem); }
   .campaign-hero { padding-top: 6.5rem; }
   .campaign-index { gap: .5rem; font-size: .55rem; letter-spacing: .09em; }
@@ -1497,7 +1509,7 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   #coaching .service-row.reveal.is-visible { opacity: 1; transform: translateY(0) scale(1); }
   #coaching .service-row.reveal.is-visible.is-scroll-active {
     z-index: 2;
-    padding-inline: .8rem;
+    padding-inline: 1.25rem;
     background: #004aad;
     color: #fff;
     box-shadow: 0 18px 38px rgba(17,19,23,.16), 0 8px 0 rgba(0,74,173,.10);
