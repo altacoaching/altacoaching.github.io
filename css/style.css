@@ -1224,6 +1224,21 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
   box-shadow: 0 9px 20px rgba(0,0,0,.2);
 }
 
+@media (min-width: 1024px) {
+  .home-page-v34 .after-heading { margin-bottom: 3rem; }
+  .home-page-v34 .after-sequence {
+    width: min(calc(100% - 4rem), 1360px);
+    margin-inline: auto;
+  }
+  .home-page-v34 .after-step {
+    width: 100%;
+    min-height: 300px;
+    margin-inline: 0;
+    padding-block: 2.75rem;
+  }
+  .home-page-v34 .after-step-light { margin-block: 1.25rem; }
+}
+
 @media (max-width: 520px) {
   .hero-actions .button { width: 100%; min-height: 58px; }
   .email-nowrap { font-size: clamp(.6rem, 3vw, .76rem); }
