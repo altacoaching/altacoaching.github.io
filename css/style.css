@@ -1228,6 +1228,9 @@ details p { max-width: 700px; margin: 0 0 1.3rem; color: var(--color-muted); }
 }
 
 @media (min-width: 1024px) {
+  .home-page-v34 main > .section:not(.campaign-hero):not(.reservation) {
+    padding-block: clamp(4rem, 7vw, 7rem);
+  }
   .home-page-v34 .after-heading { margin-bottom: 3rem; }
   .home-page-v34 .after-sequence {
     width: min(calc(100% - 4rem), 1360px);
