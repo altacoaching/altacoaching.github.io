@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./payment.css">
+  <link rel="stylesheet" href="./payment.css?v=2">
   <script src="https://js.stripe.com/dahlia/stripe.js"></script>
-  <script src="./payment.js" defer></script>
+  <script src="./payment.js?v=2" defer></script>
 </head>
 <body>
   <header class="payment-header">
@@ -21,8 +21,6 @@
     <span class="secure-label">Paiement sécurisé</span>
     <a class="back-link" href="../">← Retour au site</a>
   </header>
-
-  <div class="sandbox-banner" role="status">SANDBOX · AUCUN PAIEMENT RÉEL</div>
 
   <main class="payment-layout">
     <section class="payment-panel" aria-labelledby="payment-title">
@@ -83,7 +81,6 @@
         <div><span>Sous-total</span><strong id="summary-subtotal">—</strong></div>
         <div class="summary-total"><span>Total aujourd’hui</span><strong id="summary-total">—</strong></div>
       </div>
-      <span class="summary-sandbox">SANDBOX · AUCUN PAIEMENT RÉEL</span>
     </aside>
   </main>
 </body>

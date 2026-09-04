@@ -4,7 +4,6 @@
   const title = document.querySelector("#return-title");
   const message = document.querySelector("#return-message");
   const email = document.querySelector("#return-email");
-  const sandboxKicker = document.querySelector(".return-kicker");
   const bookingButton = document.querySelector("#booking-button");
   const initializedNamespaces = new Set();
   let activeBookingRoute = null;
@@ -197,9 +196,6 @@
       if (typeof session.livemode !== "boolean") {
         throw new Error("Impossible de vérifier l’environnement du paiement.");
       }
-      sandboxKicker.hidden = session.livemode;
-      if (!session.livemode) sandboxKicker.textContent = "SANDBOX · AUCUN PAIEMENT RÉEL";
-
       if (session.status === "bank_transfer_pending") {
         render(
           "VIREMENT EN ATTENTE",

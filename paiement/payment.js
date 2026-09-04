@@ -16,7 +16,6 @@
   const bankSection = document.querySelector("#bank-transfer-section");
   const bankButton = document.querySelector("#bank-transfer-button");
   const bankEmail = document.querySelector("#bank-email");
-  const sandboxIndicators = document.querySelectorAll(".sandbox-banner, .summary-sandbox");
   let checkoutActions = null;
   let offer = null;
   let canConfirm = false;
@@ -55,9 +54,6 @@
     if (environment !== "live" && environment !== "test") {
       throw new Error("La configuration du paiement sécurisé est invalide.");
     }
-    sandboxIndicators.forEach((indicator) => {
-      indicator.hidden = environment === "live";
-    });
   };
 
   const updateSubmitState = () => {
