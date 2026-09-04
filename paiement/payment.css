@@ -45,16 +45,6 @@ button:disabled { cursor: wait; opacity: 0.62; }
 .back-link { justify-self: end; font-weight: 700; text-decoration: none; }
 .back-link:hover, .back-link:focus-visible { color: var(--blue); }
 
-.sandbox-banner {
-  padding: 0.7rem 1rem;
-  text-align: center;
-  color: var(--ink);
-  background: var(--orange);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-}
-
 .payment-layout {
   width: min(1180px, calc(100% - 2rem));
   margin: clamp(2rem, 5vw, 5rem) auto;
@@ -219,13 +209,10 @@ h1 {
 .summary-totals { display: grid; gap: 0.8rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.25); }
 .summary-totals div { display: flex; justify-content: space-between; gap: 1rem; }
 .summary-total { padding-top: 0.8rem; font-size: 1.08rem; border-top: 1px solid rgba(255,255,255,0.15); }
-.summary-sandbox { display: inline-block; margin-top: 2rem; padding: 0.45rem 0.65rem; color: var(--ink); background: var(--orange); font-size: 0.68rem; font-weight: 900; letter-spacing: 0.08em; }
-
 .return-page { min-height: 100vh; display: grid; place-items: center; padding: 1rem; background: var(--blue); }
 .return-shell { width: min(720px, 100%); padding: clamp(1.5rem, 5vw, 4rem); border-radius: 22px; background: var(--white); box-shadow: 10px 10px 0 var(--orange); }
 .return-brand { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 2rem; }
 .return-brand img { display: block; width: 230px; height: auto; margin-inline: auto; }
-.return-kicker { margin: 0 0 0.6rem; color: var(--orange); font-weight: 900; letter-spacing: 0.12em; font-size: 0.75rem; }
 .return-shell h1 { margin-bottom: 1rem; }
 .return-message { max-width: 58ch; line-height: 1.65; }
 .return-email { font-weight: 700; color: var(--blue-dark); }
