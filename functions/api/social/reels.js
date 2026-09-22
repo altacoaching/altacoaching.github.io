@@ -1,10 +1,9 @@
 const GRAPH_API_VERSION = "v26.0";
 const DEFAULT_PAGE_ID = "61591944164231";
-const FACEBOOK_PAGE_URL = "https://www.facebook.com/profile.php?id=61591944164231";
 const FRESH_TTL_MS = 30 * 60 * 1000;
 const STALE_TTL_SECONDS = 24 * 60 * 60;
 const META_TIMEOUT_MS = 7000;
-const META_FIELDS = "id,created_time,description,name,picture,embed_html";
+const META_FIELDS = "id,created_time,permalink_url";
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -24,54 +23,27 @@ function normalizePageId(value) {
   return /^\d{5,30}$/.test(candidate) ? candidate : DEFAULT_PAGE_ID;
 }
 
-function decodeHtmlUrl(value) {
-  return String(value || "").replaceAll("&amp;", "&").replaceAll("&#x3D;", "=").replaceAll("&#61;", "=");
-}
-
-function isFacebookUrl(value) {
-  if (typeof value !== "string" || !value) return false;
+function normalizeFacebookPermalink(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
   try {
-    const url = new URL(value);
-    return url.protocol === "https:" && /(^|\.)facebook\.com$/i.test(url.hostname);
+    const url = new URL(value, "https://www.facebook.com");
+    if (url.protocol !== "https:" || !/(^|\.)facebook\.com$/i.test(url.hostname)) return null;
+    return url.href;
   } catch {
-    return false;
+    return null;
   }
-}
-
-function permalinkFromOfficialEmbed(embedHtml) {
-  if (typeof embedHtml !== "string" || !embedHtml) return null;
-  const attrMatches = [...embedHtml.matchAll(/(?:href|src)=["']([^"']+)["']/gi)];
-  for (const match of attrMatches) {
-    const candidate = decodeHtmlUrl(match[1]);
-    if (!isFacebookUrl(candidate)) continue;
-    try {
-      const url = new URL(candidate);
-      const nested = url.searchParams.get("href");
-      if (nested && isFacebookUrl(nested)) return nested;
-      if (!url.pathname.startsWith("/plugins/")) return url.href;
-    } catch {
-      // Ignore malformed values returned inside embed HTML.
-    }
-  }
-  return null;
 }
 
 function normalizeReel(video) {
   if (!video || typeof video !== "object" || !video.id) return null;
-  const publishedAt = typeof video.created_time === "string" ? video.created_time : null;
-  const titleOrCaption = [video.description, video.name].find((value) => typeof value === "string" && value.trim()) || null;
-  const thumbnail = typeof video.picture === "string" && /^https:\/\//i.test(video.picture) ? video.picture : null;
-  const permalink = permalinkFromOfficialEmbed(video.embed_html);
-
+  const permalink = normalizeFacebookPermalink(video.permalink_url);
+  if (!permalink) return null;
   return {
     id: String(video.id),
     platform: "facebook",
     type: "reel",
     permalink,
-    publishedAt,
-    titleOrCaption,
-    thumbnail,
-    embedData: null
+    publishedAt: typeof video.created_time === "string" ? video.created_time : null
   };
 }
 
@@ -90,7 +62,7 @@ function getCache() {
 function cacheKeyFor(request, pageId) {
   const url = new URL(request.url);
   url.pathname = "/api/social/reels";
-  url.search = `?source=facebook-v1&page=${encodeURIComponent(pageId)}`;
+  url.search = `?source=facebook-v2&page=${encodeURIComponent(pageId)}`;
   return new Request(url.toString(), { method: "GET" });
 }
 
@@ -107,19 +79,18 @@ async function readCached(cache, key) {
 
 async function writeCached(cache, key, payload) {
   if (!cache) return;
-  const response = new Response(JSON.stringify(payload), {
+  await cache.put(key, new Response(JSON.stringify(payload), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": `public, max-age=${STALE_TTL_SECONDS}`
     }
-  });
-  await cache.put(key, response);
+  }));
 }
 
 async function fetchMetaReels(pageId, token) {
   const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${pageId}/video_reels`);
   url.searchParams.set("fields", META_FIELDS);
-  url.searchParams.set("limit", "12");
+  url.searchParams.set("limit", "6");
   url.searchParams.set("access_token", token);
 
   const controller = new AbortController();
@@ -133,8 +104,7 @@ async function fetchMetaReels(pageId, token) {
     if (!response.ok) throw new Error("meta_request_failed");
     const payload = await response.json();
     const source = Array.isArray(payload?.data) ? payload.data : [];
-    const items = sortNewestFirst(source.map(normalizeReel).filter(Boolean)).slice(0, 6);
-    return items;
+    return sortNewestFirst(source.map(normalizeReel).filter(Boolean)).slice(0, 6);
   } finally {
     clearTimeout(timeout);
   }
@@ -149,12 +119,7 @@ export async function onRequest({ request, env, waitUntil }) {
   const pageId = normalizePageId(env.FACEBOOK_PAGE_ID);
 
   if (!token) {
-    return jsonResponse({
-      items: [],
-      source: "facebook",
-      pageUrl: FACEBOOK_PAGE_URL,
-      status: "not_configured"
-    });
+    return jsonResponse({ items: [], source: "facebook", status: "not_configured" });
   }
 
   const cache = getCache();
@@ -162,7 +127,7 @@ export async function onRequest({ request, env, waitUntil }) {
   const cached = await readCached(cache, cacheKey);
   const cachedAt = Date.parse(cached?.cachedAt || "") || 0;
 
-  if (cached?.items && Date.now() - cachedAt < FRESH_TTL_MS) {
+  if (cached?.items?.length && Date.now() - cachedAt < FRESH_TTL_MS) {
     return jsonResponse({ ...cached, status: "fresh_cache" });
   }
 
@@ -171,7 +136,6 @@ export async function onRequest({ request, env, waitUntil }) {
     const payload = {
       items,
       source: "facebook",
-      pageUrl: FACEBOOK_PAGE_URL,
       cachedAt: new Date().toISOString(),
       status: items.length ? "live" : "empty"
     };
@@ -180,14 +144,7 @@ export async function onRequest({ request, env, waitUntil }) {
     else await cacheWrite;
     return jsonResponse(payload);
   } catch {
-    if (cached?.items?.length) {
-      return jsonResponse({ ...cached, status: "stale_cache" });
-    }
-    return jsonResponse({
-      items: [],
-      source: "facebook",
-      pageUrl: FACEBOOK_PAGE_URL,
-      status: "unavailable"
-    });
+    if (cached?.items?.length) return jsonResponse({ ...cached, status: "stale_cache" });
+    return jsonResponse({ items: [], source: "facebook", status: "unavailable" });
   }
 }
