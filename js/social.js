@@ -3,42 +3,99 @@
   if (!section) return;
 
   const endpoint = "/api/social/reels";
-  const facebookPageUrl = "https://www.facebook.com/profile.php?id=61591944164231";
   const track = section.querySelector("[data-social-track]");
-  const fallback = section.querySelector("[data-social-fallback]");
   const status = section.querySelector("[data-social-status]");
   const prev = section.querySelector("[data-social-prev]");
   const next = section.querySelector("[data-social-next]");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let loaded = false;
 
-  const safeUrl = (value) => {
-    if (typeof value !== "string") return null;
+  const safeFacebookPermalink = (value) => {
+    if (typeof value !== "string" || !value.trim()) return null;
     try {
-      const url = new URL(value);
-      return url.protocol === "https:" ? url.href : null;
+      const url = new URL(value, "https://www.facebook.com");
+      if (url.protocol !== "https:" || !/(^|\.)facebook\.com$/i.test(url.hostname)) return null;
+      return url.href;
     } catch {
       return null;
     }
-  };
-
-  const formatDate = (value) => {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(date);
   };
 
   const setStatus = (message) => {
     if (status) status.textContent = message;
   };
 
+  const hideSection = () => {
+    section.hidden = true;
+    setStatus("Les Reels Facebook ne sont pas disponibles pour le moment.");
+  };
+
+  const playerUrl = (permalink) => {
+    const url = new URL("https://www.facebook.com/plugins/video.php");
+    url.searchParams.set("href", permalink);
+    url.searchParams.set("show_text", "false");
+    url.searchParams.set("width", "430");
+    url.searchParams.set("autoplay", "false");
+    return url.href;
+  };
+
+  const createReel = (item) => {
+    const permalink = safeFacebookPermalink(item?.permalink);
+    if (!permalink) return null;
+
+    const article = document.createElement("article");
+    article.className = "social-reel";
+
+    const player = document.createElement("div");
+    player.className = "social-reel-player";
+    player.dataset.embedSrc = playerUrl(permalink);
+
+    const iframe = document.createElement("iframe");
+    iframe.title = "Reel Facebook ALTA Coaching";
+    iframe.loading = "lazy";
+    iframe.scrolling = "no";
+    iframe.allow = "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share";
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    player.appendChild(iframe);
+    article.appendChild(player);
+    return article;
+  };
+
+  const activatePlayers = () => {
+    const players = [...section.querySelectorAll(".social-reel-player[data-embed-src]")];
+    if (!players.length) return;
+
+    const loadPlayer = (player) => {
+      const iframe = player.querySelector("iframe");
+      if (!iframe || iframe.src) return;
+      iframe.src = player.dataset.embedSrc;
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      players.forEach(loadPlayer);
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        loadPlayer(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { root: track, rootMargin: "0px 80% 0px 80%", threshold: .01 });
+    players.forEach((player) => observer.observe(player));
+  };
+
   const scrollByCard = (direction) => {
-    const card = track?.querySelector(".social-card");
+    const card = track?.querySelector(".social-reel");
     if (!track || !card) return;
     const styles = getComputedStyle(track);
     const gap = parseFloat(styles.columnGap || styles.gap || "0") || 0;
-    track.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: reducedMotion ? "auto" : "smooth" });
+    track.scrollBy({
+      left: direction * (card.getBoundingClientRect().width + gap),
+      behavior: reducedMotion ? "auto" : "smooth"
+    });
   };
 
   const updateControls = () => {
@@ -48,94 +105,34 @@
     next.disabled = track.scrollLeft >= max - 4;
   };
 
-  const createCard = (item) => {
-    const article = document.createElement("article");
-    article.className = "social-card";
-
-    const media = document.createElement("div");
-    media.className = "social-card-media";
-    const thumbnail = safeUrl(item.thumbnail);
-    if (thumbnail) {
-      const image = document.createElement("img");
-      image.src = thumbnail;
-      image.loading = "lazy";
-      image.decoding = "async";
-      image.alt = "Aperçu d’un Reel Facebook ALTA Coaching";
-      image.addEventListener("error", () => image.remove(), { once: true });
-      media.appendChild(image);
-    }
-    const placeholder = document.createElement("div");
-    placeholder.className = "social-card-media-placeholder";
-    placeholder.innerHTML = "<strong>ALTA</strong><span>REEL FACEBOOK</span>";
-    media.appendChild(placeholder);
-
-    const body = document.createElement("div");
-    body.className = "social-card-body";
-    const meta = document.createElement("div");
-    meta.className = "social-card-meta";
-    const platform = document.createElement("span");
-    platform.className = "social-card-platform";
-    platform.textContent = "FACEBOOK";
-    const date = document.createElement("time");
-    const dateText = formatDate(item.publishedAt);
-    date.textContent = dateText;
-    if (item.publishedAt) date.dateTime = item.publishedAt;
-    meta.append(platform, date);
-    body.appendChild(meta);
-
-    if (typeof item.titleOrCaption === "string" && item.titleOrCaption.trim()) {
-      const caption = document.createElement("p");
-      caption.className = "social-card-caption";
-      caption.textContent = item.titleOrCaption.trim();
-      body.appendChild(caption);
-    }
-
-    const link = document.createElement("a");
-    link.className = "social-card-link";
-    link.href = safeUrl(item.permalink) || facebookPageUrl;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = "VOIR LE REEL ↗";
-    body.appendChild(link);
-
-    article.append(media, body);
-    return article;
-  };
-
-  const showFallback = () => {
-    if (track) track.replaceChildren();
-    if (fallback) fallback.hidden = false;
-    if (prev) prev.hidden = true;
-    if (next) next.hidden = true;
-    setStatus("Les contenus sociaux ne sont pas disponibles pour le moment.");
-  };
-
   const renderItems = (items) => {
-    if (!track || !Array.isArray(items) || !items.length) {
-      showFallback();
-      return;
-    }
+    if (!track || !Array.isArray(items)) return hideSection();
+    const reels = items.slice(0, 6).map(createReel).filter(Boolean);
+    if (!reels.length) return hideSection();
+
     const fragment = document.createDocumentFragment();
-    items.slice(0, 6).forEach((item) => fragment.appendChild(createCard(item)));
+    reels.forEach((reel) => fragment.appendChild(reel));
     track.replaceChildren(fragment);
-    if (fallback) fallback.hidden = true;
-    if (prev) prev.hidden = false;
-    if (next) next.hidden = false;
-    setStatus(`${Math.min(items.length, 6)} contenus chargés.`);
+    section.hidden = false;
+    setStatus(`${reels.length} Reels Facebook chargés.`);
+    activatePlayers();
     requestAnimationFrame(updateControls);
   };
 
   const load = async () => {
     if (loaded) return;
     loaded = true;
-    setStatus("Chargement des derniers contenus ALTA.");
+    setStatus("Chargement des derniers Reels Facebook.");
     try {
-      const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+      const response = await fetch(endpoint, {
+        headers: { Accept: "application/json" },
+        cache: "no-cache"
+      });
       if (!response.ok) throw new Error("social_feed_unavailable");
       const payload = await response.json();
       renderItems(payload.items);
     } catch {
-      showFallback();
+      hideSection();
     }
   };
 
