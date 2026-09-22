@@ -1,4 +1,4 @@
-/* ALTA sur les réseaux — carousel de lecteurs Facebook uniquement */
+/* ALTA sur les réseaux — carrousel vidéo Facebook natif */
 .social-feed {
   position: relative;
   overflow: hidden;
@@ -23,37 +23,44 @@
 
 .social-feed-header,
 .social-feed-stage { position: relative; z-index: 1; }
+
 .social-feed .eyebrow { color: var(--color-accent); }
 .social-feed h2 { max-width: 920px; color: #fff; }
 .social-feed h2 span { display: block; color: var(--color-accent); }
+
 .social-feed-intro {
   max-width: 720px;
-  margin: 1.5rem 0 0;
+  margin: .85rem 0 0;
   color: rgba(255,255,255,.72);
   font-size: clamp(.98rem, 1.4vw, 1.12rem);
 }
 
-.social-feed-stage { margin-top: clamp(2.4rem, 4.5vw, 4rem); }
+/* Espace volontairement resserré entre le sous-titre et les vidéos. */
+.social-feed-stage { margin-top: .7rem; }
 .social-carousel-shell { min-height: 0; }
+
 .social-carousel-toolbar {
   display: flex;
   justify-content: flex-end;
-  min-height: 46px;
-  margin-bottom: 1rem;
+  min-height: 38px;
+  margin-bottom: .35rem;
 }
-.social-carousel-controls { display: flex; gap: .55rem; }
+
+.social-carousel-controls { display: flex; gap: .45rem; }
+
 .social-carousel-button {
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   border: 1px solid rgba(255,255,255,.28);
   border-radius: 50%;
   background: rgba(255,255,255,.04);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease, background var(--motion-fast) ease, color var(--motion-fast) ease, opacity var(--motion-fast) ease;
 }
+
 .social-carousel-button:hover:not(:disabled),
 .social-carousel-button:focus-visible:not(:disabled) {
   transform: translateY(-2px);
@@ -61,12 +68,13 @@
   background: var(--color-accent);
   color: var(--color-dark);
 }
+
 .social-carousel-button:disabled { opacity: .3; cursor: default; }
 
 .social-carousel {
   display: flex;
   gap: clamp(.85rem, 1.5vw, 1.35rem);
-  padding: .3rem .15rem 1.2rem;
+  padding: .15rem .15rem 1rem;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scroll-behavior: smooth;
@@ -74,6 +82,7 @@
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
+
 .social-carousel::-webkit-scrollbar { display: none; }
 
 .social-reel,
@@ -92,24 +101,24 @@
   aspect-ratio: 9 / 16;
   transition: transform var(--motion-normal) var(--ease-premium), border-color var(--motion-normal) ease, box-shadow var(--motion-normal) ease;
 }
+
 .social-reel:hover {
   transform: translateY(-4px);
   border-color: rgba(252,142,76,.78);
   box-shadow: 0 28px 70px rgba(0,0,0,.3);
 }
-.social-reel-player,
-.social-reel iframe {
+
+.social-reel-video {
+  display: block;
   width: 100%;
   height: 100%;
-}
-.social-reel-player { background: #05080d; }
-.social-reel iframe {
-  display: block;
   border: 0;
   background: #05080d;
+  object-fit: cover;
 }
 
 .social-card-skeleton { aspect-ratio: 9 / 16; }
+
 .social-card-skeleton-media {
   width: 100%;
   height: 100%;
@@ -117,7 +126,10 @@
   animation: social-skeleton 1.5s ease-in-out infinite alternate;
 }
 
-@keyframes social-skeleton { from { opacity: .46; } to { opacity: .9; } }
+@keyframes social-skeleton {
+  from { opacity: .46; }
+  to { opacity: .9; }
+}
 
 @media (max-width: 1024px) {
   .social-reel,
@@ -127,12 +139,17 @@
 @media (max-width: 600px) {
   .social-feed::before { top: 1rem; right: -2rem; }
   .social-feed h2 { font-size: clamp(2.65rem, 13vw, 4.5rem); }
-  .social-carousel-toolbar { min-height: 0; margin-bottom: .8rem; }
+  .social-feed-intro { margin-top: .7rem; }
+
+  .social-feed-stage { margin-top: .45rem; }
+  .social-carousel-toolbar { min-height: 0; margin-bottom: .35rem; }
   .social-carousel-controls { display: none; }
+
   .social-carousel {
     margin-right: calc((100vw - 100%) * -1);
     padding-right: 2.4rem;
   }
+
   .social-reel,
   .social-card-skeleton {
     flex-basis: calc(100vw - 4.75rem);
