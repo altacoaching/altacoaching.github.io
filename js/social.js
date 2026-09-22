@@ -2,13 +2,15 @@
   const section = document.querySelector("[data-social-feed]");
   if (!section) return;
 
-  const endpoint = "/api/social/reels?v=4";
+  const endpoint = "/api/social/reels?v=5";
   const track = section.querySelector("[data-social-track]");
   const status = section.querySelector("[data-social-status]");
   const prev = section.querySelector("[data-social-prev]");
   const next = section.querySelector("[data-social-next]");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let loaded = false;
+  let sectionVisible = false;
+  const autoplayVideos = [];
 
   const safeMediaUrl = (value) => {
     if (typeof value !== "string" || !value.trim()) return null;
@@ -47,14 +49,42 @@
     setStatus("Les vidéos Facebook ne sont pas disponibles pour le moment.");
   };
 
+  const tryPlay = (video) => {
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {});
+    }
+  };
+
+  const playAutoplayVideos = () => {
+    autoplayVideos.forEach((video) => tryPlay(video));
+  };
+
+  const pauseAutoplayVideos = () => {
+    autoplayVideos.forEach((video) => {
+      try { video.pause(); } catch {}
+    });
+  };
+
+  const syncAutoplay = () => {
+    if (sectionVisible) playAutoplayVideos();
+    else pauseAutoplayVideos();
+  };
+
   const removeBrokenCard = (article) => {
+    const video = article.querySelector("video");
+    const index = autoplayVideos.indexOf(video);
+    if (index >= 0) autoplayVideos.splice(index, 1);
     article.remove();
     const remaining = track?.querySelectorAll(".social-reel").length || 0;
     if (!remaining) hideSection();
     requestAnimationFrame(updateControls);
   };
 
-  const createReel = (item) => {
+  const createReel = (item, index) => {
     const videoUrl = safeMediaUrl(item?.videoUrl);
     if (!videoUrl) return null;
 
@@ -67,12 +97,28 @@
     video.playsInline = true;
     video.preload = "metadata";
     video.src = videoUrl;
-    video.setAttribute("controlsList", "nodownload");
+    video.setAttribute("controlsList", "nodownload noplaybackrate");
+    video.muted = true;
+    video.defaultMuted = true;
+    video.loop = true;
+    video.setAttribute("muted", "");
+
+    if (index < 3) {
+      video.setAttribute("data-autoplay", "true");
+      autoplayVideos.push(video);
+    }
 
     const poster = safeHttpsUrl(item?.poster);
     if (poster) video.poster = poster;
 
     video.addEventListener("error", () => removeBrokenCard(article), { once: true });
+    video.addEventListener("ended", () => {
+      video.currentTime = 0;
+      if (sectionVisible) tryPlay(video);
+    });
+    video.addEventListener("loadedmetadata", () => {
+      if (sectionVisible && video.dataset.autoplay === "true") tryPlay(video);
+    }, { once: true });
 
     article.appendChild(video);
     return article;
@@ -98,15 +144,19 @@
 
   const renderItems = (items) => {
     if (!track || !Array.isArray(items)) return hideSection();
-    const reels = items.slice(0, 6).map(createReel).filter(Boolean);
+    autoplayVideos.length = 0;
+    const reels = items.slice(0, 6).map((item, index) => createReel(item, index)).filter(Boolean);
     if (!reels.length) return hideSection();
 
     const fragment = document.createDocumentFragment();
     reels.forEach((reel) => fragment.appendChild(reel));
     track.replaceChildren(fragment);
     section.hidden = false;
-    setStatus(`${reels.length} vidéos Facebook chargées.`);
-    requestAnimationFrame(updateControls);
+    setStatus(`${Math.min(3, autoplayVideos.length)} vidéos lancées automatiquement, son coupé.`);
+    requestAnimationFrame(() => {
+      updateControls();
+      syncAutoplay();
+    });
   };
 
   const load = async () => {
@@ -137,13 +187,21 @@
   window.addEventListener("resize", updateControls, { passive: true });
 
   if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
+    const loadObserver = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
-      observer.disconnect();
+      loadObserver.disconnect();
       load();
-    }, { rootMargin: "500px 0px" });
-    observer.observe(section);
+    }, { rootMargin: "350px 0px" });
+    loadObserver.observe(section);
+
+    const playbackObserver = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      sectionVisible = Boolean(entry && entry.isIntersecting && entry.intersectionRatio > 0.3);
+      syncAutoplay();
+    }, { threshold: [0, 0.3, 0.6] });
+    playbackObserver.observe(section);
   } else {
+    sectionVisible = true;
     load();
   }
 })();
