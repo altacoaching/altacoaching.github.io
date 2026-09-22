@@ -1,0 +1,200 @@
+/* ALTA sur les réseaux — isolated homepage section */
+.social-feed {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(0, 74, 173, .34), transparent 34rem),
+    linear-gradient(145deg, #0b111a 0%, var(--color-dark) 58%, #07172b 100%);
+  color: var(--color-light);
+}
+
+.social-feed::before {
+  content: "ALTA";
+  position: absolute;
+  top: -1.35rem;
+  right: -1rem;
+  color: rgba(255,255,255,.025);
+  font: 400 clamp(10rem, 28vw, 30rem)/.8 var(--font-display);
+  letter-spacing: -.04em;
+  pointer-events: none;
+}
+
+.social-feed-header {
+  display: grid;
+  position: relative;
+  z-index: 1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(2rem, 6vw, 7rem);
+  align-items: end;
+}
+
+.social-feed .eyebrow { color: var(--color-accent); }
+.social-feed h2 { max-width: 920px; color: #fff; }
+.social-feed h2 span { display: block; color: var(--color-accent); }
+.social-feed-intro { max-width: 720px; margin: 1.5rem 0 0; color: rgba(255,255,255,.72); font-size: clamp(.98rem, 1.4vw, 1.12rem); }
+
+.social-feed-actions { display: grid; gap: .85rem; justify-items: end; }
+.social-facebook-cta { white-space: nowrap; }
+.social-network-links { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: flex-end; }
+.social-network-links a {
+  padding: .45rem .65rem;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+  color: rgba(255,255,255,.78);
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease, background var(--motion-fast) ease;
+}
+.social-network-links a:hover,
+.social-network-links a:focus-visible { border-color: var(--color-accent); background: rgba(252,142,76,.08); color: #fff; }
+
+.social-feed-stage { position: relative; z-index: 1; margin-top: clamp(2.6rem, 5vw, 4.6rem); }
+.social-carousel-shell { min-height: 650px; }
+.social-carousel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.social-carousel-label { margin: 0; color: rgba(255,255,255,.55); font-size: .68rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+.social-carousel-controls { display: flex; gap: .55rem; }
+.social-carousel-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  color: #fff;
+  font-size: 1.2rem;
+  transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease, background var(--motion-fast) ease, color var(--motion-fast) ease, opacity var(--motion-fast) ease;
+}
+.social-carousel-button:hover:not(:disabled),
+.social-carousel-button:focus-visible:not(:disabled) { transform: translateY(-2px); border-color: var(--color-accent); background: var(--color-accent); color: var(--color-dark); }
+.social-carousel-button:disabled { opacity: .3; cursor: default; }
+
+.social-carousel {
+  display: flex;
+  gap: clamp(.85rem, 1.5vw, 1.35rem);
+  padding: .3rem .15rem 1.2rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.social-carousel::-webkit-scrollbar { display: none; }
+
+.social-card,
+.social-card-skeleton {
+  flex: 0 0 clamp(320px, 34%, 470px);
+  scroll-snap-align: start;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--radius-md);
+  background: #151a22;
+}
+
+.social-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 22px 58px rgba(0,0,0,.22);
+  transition: transform var(--motion-normal) var(--ease-premium), border-color var(--motion-normal) ease, box-shadow var(--motion-normal) ease;
+}
+.social-card:hover { transform: translateY(-4px); border-color: rgba(252,142,76,.78); box-shadow: 0 28px 70px rgba(0,0,0,.3); }
+
+.social-card-media {
+  display: grid;
+  position: relative;
+  aspect-ratio: 9 / 16;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(150deg, rgba(0,74,173,.95), rgba(0,53,125,.55) 55%, rgba(252,142,76,.2)),
+    #0b2d58;
+}
+.social-card-media::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 32%;
+  background: linear-gradient(transparent, rgba(5,10,18,.7));
+  pointer-events: none;
+}
+.social-card-media img { grid-area: 1 / 1; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
+.social-card-media-placeholder { display: grid; grid-area: 1 / 1; gap: .7rem; place-items: center; color: rgba(255,255,255,.92); text-align: center; }
+.social-card-media-placeholder strong { font: 400 clamp(3rem, 6vw, 5.6rem)/.85 var(--font-display); letter-spacing: -.02em; }
+.social-card-media-placeholder span { color: var(--color-accent); font-size: .68rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+
+.social-card-body { display: flex; min-height: 190px; flex-direction: column; padding: 1rem 1rem 1.15rem; }
+.social-card-meta { display: flex; align-items: center; justify-content: space-between; gap: .75rem; color: rgba(255,255,255,.52); font-size: .65rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+.social-card-platform { color: var(--color-accent); }
+.social-card-caption {
+  display: -webkit-box;
+  margin: .85rem 0 1.1rem;
+  overflow: hidden;
+  color: rgba(255,255,255,.86);
+  font-size: .9rem;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.social-card-link { margin-top: auto; color: #fff; font-size: .7rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.social-card-link:hover { color: var(--color-accent); }
+
+.social-card-skeleton { overflow: hidden; }
+.social-card-skeleton-media { aspect-ratio: 9 / 16; background: rgba(255,255,255,.08); }
+.social-card-skeleton-copy { display: grid; gap: .75rem; padding: 1rem; }
+.social-card-skeleton-copy span { display: block; height: .72rem; border-radius: 999px; background: rgba(255,255,255,.09); }
+.social-card-skeleton-copy span:nth-child(1) { width: 42%; }
+.social-card-skeleton-copy span:nth-child(2) { width: 88%; }
+.social-card-skeleton-copy span:nth-child(3) { width: 64%; }
+.social-card-skeleton-media,
+.social-card-skeleton-copy span { animation: social-skeleton 1.5s ease-in-out infinite alternate; }
+
+.social-feed-fallback {
+  max-width: 820px;
+  padding: clamp(1.6rem, 4vw, 3rem);
+  border: 1px solid rgba(255,255,255,.16);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.055);
+  box-shadow: var(--shadow-md);
+}
+.social-feed-fallback[hidden] { display: none; }
+.social-feed-fallback h3 { color: #fff; font-size: clamp(2.4rem, 5vw, 5rem); }
+.social-feed-fallback > p:not(.eyebrow) { max-width: 590px; color: rgba(255,255,255,.72); }
+
+@keyframes social-skeleton { from { opacity: .46; } to { opacity: .9; } }
+
+@media (max-width: 1024px) {
+  .social-feed-header { grid-template-columns: 1fr; }
+  .social-feed-actions { justify-items: start; }
+  .social-network-links { justify-content: flex-start; }
+  .social-card,
+  .social-card-skeleton { flex-basis: clamp(320px, 58vw, 500px); }
+}
+
+@media (max-width: 600px) {
+  .social-feed::before { top: 1rem; right: -2rem; }
+  .social-feed-header { gap: 1.5rem; }
+  .social-feed h2 { font-size: clamp(2.65rem, 13vw, 4.5rem); }
+  .social-facebook-cta { width: 100%; white-space: normal; text-align: center; }
+  .social-network-links { width: 100%; }
+  .social-network-links a { flex: 1; text-align: center; }
+  .social-carousel-controls { display: none; }
+  .social-carousel-shell { min-height: 610px; }
+  .social-carousel { margin-right: calc((100vw - 100%) * -1); padding-right: 2.4rem; }
+  .social-card,
+  .social-card-skeleton { flex-basis: calc(100vw - 4.75rem); min-width: 250px; }
+  .social-card-body { min-height: 176px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-carousel { scroll-behavior: auto; }
+  .social-card,
+  .social-carousel-button { transition: none; }
+  .social-card:hover { transform: none; }
+  .social-card-skeleton-media,
+  .social-card-skeleton-copy span { animation: none; }
+}
