@@ -1,6 +1,6 @@
 const GRAPH_API_VERSION = "v26.0";
-const FRESH_TTL_MS = 30 * 60 * 1000;
-const STALE_TTL_SECONDS = 24 * 60 * 60;
+const FRESH_TTL_MS = 10 * 60 * 1000;
+const STALE_TTL_SECONDS = 30 * 60;
 const META_TIMEOUT_MS = 8000;
 
 class MetaRequestError extends Error {
@@ -17,7 +17,7 @@ function jsonResponse(data, status = 200) {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": status === 200
-        ? "public, max-age=120, s-maxage=1800, stale-while-revalidate=86400"
+        ? "public, max-age=60, s-maxage=600, stale-while-revalidate=1800"
         : "no-store",
       "X-Content-Type-Options": "nosniff"
     }
@@ -35,6 +35,36 @@ function normalizeFacebookUrl(value) {
   }
 }
 
+function normalizeHttpsUrl(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeVideoSource(value) {
+  const url = normalizeHttpsUrl(value);
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    if (
+      host === "facebook.com" ||
+      host.endsWith(".facebook.com") ||
+      host === "fbcdn.net" ||
+      host.endsWith(".fbcdn.net")
+    ) {
+      return parsed.href;
+    }
+  } catch {
+    // no-op
+  }
+  return null;
+}
+
 function isVideoAttachment(attachment) {
   if (!attachment || typeof attachment !== "object") return false;
   const mediaType = String(attachment.media_type || "").toLowerCase();
@@ -42,31 +72,15 @@ function isVideoAttachment(attachment) {
   return mediaType.includes("video") || type.includes("video") || type.includes("reel");
 }
 
-function normalizeVideoPost(post) {
-  if (!post || typeof post !== "object" || !post.id) return null;
-
+function videoAttachmentFor(post) {
   const attachments = Array.isArray(post?.attachments?.data) ? post.attachments.data : [];
-  const videoAttachment = attachments.find(isVideoAttachment) || null;
+  return attachments.find(isVideoAttachment) || null;
+}
 
-  const candidates = [
-    post.permalink_url,
-    videoAttachment?.url,
-    videoAttachment?.target?.url
-  ];
-
-  const permalink = candidates.map(normalizeFacebookUrl).find(Boolean);
-  if (!permalink) return null;
-
-  const looksLikeVideoUrl = /\/reel(?:s)?\//i.test(permalink) || /\/videos?\//i.test(permalink);
-  if (!looksLikeVideoUrl && !videoAttachment) return null;
-
-  return {
-    id: String(post.id),
-    platform: "facebook",
-    type: /\/reel(?:s)?\//i.test(permalink) ? "reel" : "video",
-    permalink,
-    publishedAt: typeof post.created_time === "string" ? post.created_time : null
-  };
+function looksLikeVideoPost(post) {
+  if (videoAttachmentFor(post)) return true;
+  const permalink = normalizeFacebookUrl(post?.permalink_url);
+  return Boolean(permalink && (/\/reel(?:s)?\//i.test(permalink) || /\/videos?\//i.test(permalink)));
 }
 
 function sortNewestFirst(items) {
@@ -84,7 +98,7 @@ function getCache() {
 function cacheKeyFor(request) {
   const url = new URL(request.url);
   url.pathname = "/api/social/reels";
-  url.search = "?source=facebook-v3";
+  url.search = "?source=facebook-v4";
   return new Request(url.toString(), { method: "GET" });
 }
 
@@ -147,32 +161,20 @@ async function resolvePage(systemUserToken, preferredPageId) {
 
   const payload = await metaGet(url, "page_lookup_failed");
   const pages = Array.isArray(payload?.data) ? payload.data : [];
-
-  if (!pages.length) {
-    throw new MetaRequestError("no_assigned_page");
-  }
+  if (!pages.length) throw new MetaRequestError("no_assigned_page");
 
   let page = null;
-
   if (preferredPageId) {
     page = pages.find((item) => String(item?.id) === String(preferredPageId)) || null;
   }
-
-  if (!page && pages.length === 1) {
-    page = pages[0];
-  }
-
+  if (!page && pages.length === 1) page = pages[0];
   if (!page) {
     page = pages.find((item) =>
-      typeof item?.name === "string" &&
-      /maxime|alta|coach sportif/i.test(item.name)
+      typeof item?.name === "string" && /maxime|alta|coach sportif/i.test(item.name)
     ) || null;
   }
 
-  if (!page?.id) {
-    throw new MetaRequestError("page_not_resolved");
-  }
-
+  if (!page?.id) throw new MetaRequestError("page_not_resolved");
   if (typeof page.access_token !== "string" || !page.access_token.trim()) {
     throw new MetaRequestError("page_token_missing");
   }
@@ -184,23 +186,97 @@ async function resolvePage(systemUserToken, preferredPageId) {
   };
 }
 
-async function fetchPageVideos(page) {
+async function fetchCandidatePosts(page) {
   const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${page.id}/posts`);
   url.searchParams.set(
     "fields",
-    "id,created_time,permalink_url,attachments{media_type,type,url,target}"
+    "id,created_time,permalink_url,full_picture,attachments{media_type,type,url,target{id,url}}"
   );
-  url.searchParams.set("limit", "100");
+  url.searchParams.set("limit", "30");
   url.searchParams.set("access_token", page.token);
 
   const payload = await metaGet(url, "page_posts_failed");
   const posts = Array.isArray(payload?.data) ? payload.data : [];
+  return posts.filter(looksLikeVideoPost);
+}
 
-  const items = sortNewestFirst(
-    posts.map(normalizeVideoPost).filter(Boolean)
-  ).slice(0, 6);
+async function getObjectIdFromPost(postId, pageToken) {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${postId}`);
+  url.searchParams.set("fields", "object_id");
+  url.searchParams.set("access_token", pageToken);
+  try {
+    const payload = await metaGet(url, "post_object_lookup_failed");
+    return payload?.object_id ? String(payload.object_id) : null;
+  } catch {
+    return null;
+  }
+}
 
-  return { items, postsChecked: posts.length };
+async function fetchVideoObject(videoId, pageToken) {
+  if (!videoId) return null;
+  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${videoId}`);
+  url.searchParams.set("fields", "id,source,picture,created_time");
+  url.searchParams.set("access_token", pageToken);
+  try {
+    return await metaGet(url, "video_source_failed");
+  } catch {
+    return null;
+  }
+}
+
+async function resolvePlayableItem(post, page) {
+  const attachment = videoAttachmentFor(post);
+  let videoId = attachment?.target?.id ? String(attachment.target.id) : null;
+  let video = videoId ? await fetchVideoObject(videoId, page.token) : null;
+
+  if (!normalizeVideoSource(video?.source)) {
+    const objectId = await getObjectIdFromPost(post.id, page.token);
+    if (objectId && objectId !== videoId) {
+      videoId = objectId;
+      video = await fetchVideoObject(videoId, page.token);
+    }
+  }
+
+  const videoUrl = normalizeVideoSource(video?.source);
+  if (!videoUrl) return null;
+
+  const permalink =
+    normalizeFacebookUrl(post.permalink_url) ||
+    normalizeFacebookUrl(attachment?.url) ||
+    normalizeFacebookUrl(attachment?.target?.url);
+
+  const poster =
+    normalizeHttpsUrl(video?.picture) ||
+    normalizeHttpsUrl(post.full_picture);
+
+  return {
+    id: String(post.id),
+    platform: "facebook",
+    type: permalink && /\/reel(?:s)?\//i.test(permalink) ? "reel" : "video",
+    permalink,
+    videoUrl,
+    poster,
+    publishedAt:
+      typeof post.created_time === "string"
+        ? post.created_time
+        : (typeof video?.created_time === "string" ? video.created_time : null)
+  };
+}
+
+async function fetchPageVideos(page) {
+  const candidates = await fetchCandidatePosts(page);
+  const items = [];
+
+  for (const post of candidates) {
+    if (items.length >= 6) break;
+    const item = await resolvePlayableItem(post, page);
+    if (item) items.push(item);
+  }
+
+  return {
+    items: sortNewestFirst(items).slice(0, 6),
+    postsChecked: candidates.length
+  };
 }
 
 export async function onRequest({ request, env, waitUntil }) {
@@ -219,11 +295,7 @@ export async function onRequest({ request, env, waitUntil }) {
       : "";
 
   if (!systemUserToken) {
-    return jsonResponse({
-      items: [],
-      source: "facebook",
-      status: "not_configured"
-    });
+    return jsonResponse({ items: [], source: "facebook", status: "not_configured" });
   }
 
   const cache = getCache();
@@ -242,10 +314,7 @@ export async function onRequest({ request, env, waitUntil }) {
     const payload = {
       items: result.items,
       source: "facebook",
-      page: {
-        id: page.id,
-        name: page.name
-      },
+      page: { id: page.id, name: page.name },
       postsChecked: result.postsChecked,
       cachedAt: new Date().toISOString(),
       status: result.items.length ? "live" : "empty"
