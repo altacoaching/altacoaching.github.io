@@ -1,9 +1,15 @@
 const GRAPH_API_VERSION = "v26.0";
-const DEFAULT_PAGE_ID = "61591944164231";
 const FRESH_TTL_MS = 30 * 60 * 1000;
 const STALE_TTL_SECONDS = 24 * 60 * 60;
-const META_TIMEOUT_MS = 7000;
-const META_FIELDS = "id,created_time,permalink_url";
+const META_TIMEOUT_MS = 8000;
+
+class MetaRequestError extends Error {
+  constructor(stage, code = null) {
+    super(stage);
+    this.stage = stage;
+    this.code = code;
+  }
+}
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -11,19 +17,14 @@ function jsonResponse(data, status = 200) {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": status === 200
-        ? "public, max-age=300, s-maxage=1800, stale-while-revalidate=86400"
+        ? "public, max-age=120, s-maxage=1800, stale-while-revalidate=86400"
         : "no-store",
       "X-Content-Type-Options": "nosniff"
     }
   });
 }
 
-function normalizePageId(value) {
-  const candidate = typeof value === "string" && value.trim() ? value.trim() : DEFAULT_PAGE_ID;
-  return /^\d{5,30}$/.test(candidate) ? candidate : DEFAULT_PAGE_ID;
-}
-
-function normalizeFacebookPermalink(value) {
+function normalizeFacebookUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
   try {
     const url = new URL(value, "https://www.facebook.com");
@@ -34,16 +35,37 @@ function normalizeFacebookPermalink(value) {
   }
 }
 
-function normalizeReel(video) {
-  if (!video || typeof video !== "object" || !video.id) return null;
-  const permalink = normalizeFacebookPermalink(video.permalink_url);
+function isVideoAttachment(attachment) {
+  if (!attachment || typeof attachment !== "object") return false;
+  const mediaType = String(attachment.media_type || "").toLowerCase();
+  const type = String(attachment.type || "").toLowerCase();
+  return mediaType.includes("video") || type.includes("video") || type.includes("reel");
+}
+
+function normalizeVideoPost(post) {
+  if (!post || typeof post !== "object" || !post.id) return null;
+
+  const attachments = Array.isArray(post?.attachments?.data) ? post.attachments.data : [];
+  const videoAttachment = attachments.find(isVideoAttachment) || null;
+
+  const candidates = [
+    post.permalink_url,
+    videoAttachment?.url,
+    videoAttachment?.target?.url
+  ];
+
+  const permalink = candidates.map(normalizeFacebookUrl).find(Boolean);
   if (!permalink) return null;
+
+  const looksLikeVideoUrl = /\/reel(?:s)?\//i.test(permalink) || /\/videos?\//i.test(permalink);
+  if (!looksLikeVideoUrl && !videoAttachment) return null;
+
   return {
-    id: String(video.id),
+    id: String(post.id),
     platform: "facebook",
-    type: "reel",
+    type: /\/reel(?:s)?\//i.test(permalink) ? "reel" : "video",
     permalink,
-    publishedAt: typeof video.created_time === "string" ? video.created_time : null
+    publishedAt: typeof post.created_time === "string" ? post.created_time : null
   };
 }
 
@@ -59,10 +81,10 @@ function getCache() {
   return typeof caches !== "undefined" && caches.default ? caches.default : null;
 }
 
-function cacheKeyFor(request, pageId) {
+function cacheKeyFor(request) {
   const url = new URL(request.url);
   url.pathname = "/api/social/reels";
-  url.search = `?source=facebook-v2&page=${encodeURIComponent(pageId)}`;
+  url.search = "?source=facebook-v3";
   return new Request(url.toString(), { method: "GET" });
 }
 
@@ -87,12 +109,7 @@ async function writeCached(cache, key, payload) {
   }));
 }
 
-async function fetchMetaReels(pageId, token) {
-  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${pageId}/video_reels`);
-  url.searchParams.set("fields", META_FIELDS);
-  url.searchParams.set("limit", "6");
-  url.searchParams.set("access_token", token);
-
+async function metaGet(url, stage) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), META_TIMEOUT_MS);
   try {
@@ -101,13 +118,89 @@ async function fetchMetaReels(pageId, token) {
       headers: { Accept: "application/json" },
       signal: controller.signal
     });
-    if (!response.ok) throw new Error("meta_request_failed");
-    const payload = await response.json();
-    const source = Array.isArray(payload?.data) ? payload.data : [];
-    return sortNewestFirst(source.map(normalizeReel).filter(Boolean)).slice(0, 6);
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new MetaRequestError(stage);
+    }
+
+    if (!response.ok || payload?.error) {
+      throw new MetaRequestError(stage, payload?.error?.code ?? null);
+    }
+
+    return payload;
+  } catch (error) {
+    if (error instanceof MetaRequestError) throw error;
+    throw new MetaRequestError(stage);
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function resolvePage(systemUserToken, preferredPageId) {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/me/accounts`);
+  url.searchParams.set("fields", "id,name,access_token,tasks");
+  url.searchParams.set("limit", "100");
+  url.searchParams.set("access_token", systemUserToken);
+
+  const payload = await metaGet(url, "page_lookup_failed");
+  const pages = Array.isArray(payload?.data) ? payload.data : [];
+
+  if (!pages.length) {
+    throw new MetaRequestError("no_assigned_page");
+  }
+
+  let page = null;
+
+  if (preferredPageId) {
+    page = pages.find((item) => String(item?.id) === String(preferredPageId)) || null;
+  }
+
+  if (!page && pages.length === 1) {
+    page = pages[0];
+  }
+
+  if (!page) {
+    page = pages.find((item) =>
+      typeof item?.name === "string" &&
+      /maxime|alta|coach sportif/i.test(item.name)
+    ) || null;
+  }
+
+  if (!page?.id) {
+    throw new MetaRequestError("page_not_resolved");
+  }
+
+  if (typeof page.access_token !== "string" || !page.access_token.trim()) {
+    throw new MetaRequestError("page_token_missing");
+  }
+
+  return {
+    id: String(page.id),
+    name: typeof page.name === "string" ? page.name : null,
+    token: page.access_token.trim()
+  };
+}
+
+async function fetchPageVideos(page) {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_API_VERSION}/${page.id}/posts`);
+  url.searchParams.set(
+    "fields",
+    "id,created_time,permalink_url,attachments{media_type,type,url,target}"
+  );
+  url.searchParams.set("limit", "100");
+  url.searchParams.set("access_token", page.token);
+
+  const payload = await metaGet(url, "page_posts_failed");
+  const posts = Array.isArray(payload?.data) ? payload.data : [];
+
+  const items = sortNewestFirst(
+    posts.map(normalizeVideoPost).filter(Boolean)
+  ).slice(0, 6);
+
+  return { items, postsChecked: posts.length };
 }
 
 export async function onRequest({ request, env, waitUntil }) {
@@ -115,15 +208,26 @@ export async function onRequest({ request, env, waitUntil }) {
     return new Response(null, { status: 405, headers: { Allow: "GET" } });
   }
 
-  const token = typeof env.META_PAGE_ACCESS_TOKEN === "string" ? env.META_PAGE_ACCESS_TOKEN.trim() : "";
-  const pageId = normalizePageId(env.FACEBOOK_PAGE_ID);
+  const systemUserToken = [
+    env.META_SYSTEM_USER_TOKEN,
+    env.META_PAGE_ACCESS_TOKEN
+  ].find((value) => typeof value === "string" && value.trim())?.trim() || "";
 
-  if (!token) {
-    return jsonResponse({ items: [], source: "facebook", status: "not_configured" });
+  const preferredPageId =
+    typeof env.FACEBOOK_PAGE_ID === "string" && /^\d{5,30}$/.test(env.FACEBOOK_PAGE_ID.trim())
+      ? env.FACEBOOK_PAGE_ID.trim()
+      : "";
+
+  if (!systemUserToken) {
+    return jsonResponse({
+      items: [],
+      source: "facebook",
+      status: "not_configured"
+    });
   }
 
   const cache = getCache();
-  const cacheKey = cacheKeyFor(request, pageId);
+  const cacheKey = cacheKeyFor(request);
   const cached = await readCached(cache, cacheKey);
   const cachedAt = Date.parse(cached?.cachedAt || "") || 0;
 
@@ -132,19 +236,37 @@ export async function onRequest({ request, env, waitUntil }) {
   }
 
   try {
-    const items = await fetchMetaReels(pageId, token);
+    const page = await resolvePage(systemUserToken, preferredPageId);
+    const result = await fetchPageVideos(page);
+
     const payload = {
-      items,
+      items: result.items,
       source: "facebook",
+      page: {
+        id: page.id,
+        name: page.name
+      },
+      postsChecked: result.postsChecked,
       cachedAt: new Date().toISOString(),
-      status: items.length ? "live" : "empty"
+      status: result.items.length ? "live" : "empty"
     };
+
     const cacheWrite = writeCached(cache, cacheKey, payload);
     if (typeof waitUntil === "function") waitUntil(cacheWrite);
     else await cacheWrite;
+
     return jsonResponse(payload);
-  } catch {
-    if (cached?.items?.length) return jsonResponse({ ...cached, status: "stale_cache" });
-    return jsonResponse({ items: [], source: "facebook", status: "unavailable" });
+  } catch (error) {
+    if (cached?.items?.length) {
+      return jsonResponse({ ...cached, status: "stale_cache" });
+    }
+
+    return jsonResponse({
+      items: [],
+      source: "facebook",
+      status: "unavailable",
+      reason: error instanceof MetaRequestError ? error.stage : "unknown",
+      metaCode: error instanceof MetaRequestError ? error.code : null
+    });
   }
 }
