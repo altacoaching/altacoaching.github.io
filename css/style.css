@@ -178,6 +178,9 @@ h1 em, h2 em, .problem-answer em { color: var(--color-accent); font-style: norma
 .price-card li::before { content: "✓"; margin-right: .5rem; color: #21b949; font-weight: 900; }
 .price-card .commitment { margin-top: auto; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .price-card .button { width: 100%; margin-top: 1rem; }
+#formules .price-card > .button { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-dark); }
+#formules .price-card > .button:hover,
+#formules .price-card > .button:focus-visible { border-color: var(--color-primary-dark); background: var(--color-primary-dark); color: #fff; }
 .initial-offer { display: grid; position: relative; grid-template-columns: minmax(0, 1fr) minmax(430px, 1fr); margin-top: clamp(2rem, 4vw, 3.5rem); overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: #f8faff; box-shadow: var(--shadow-sm); }
 .initial-offer-main { position: relative; z-index: 2; min-width: 0; padding: clamp(1.55rem, 2.6vw, 2.6rem); padding-right: clamp(2.5rem, 4vw, 4.5rem); }
 .initial-offer-kicker { margin: 0 0 .55rem; color: var(--color-accent); font-size: .68rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
@@ -191,13 +194,13 @@ h1 em, h2 em, .problem-answer em { color: var(--color-accent); font-style: norma
 .initial-offer-copy { max-width: 590px; margin: 1.15rem 0 0; color: #343940; font-size: clamp(.9rem, 1.05vw, 1rem); line-height: 1.5; }
 .initial-offer-badge-wrap { position: absolute; z-index: 5; top: 50%; right: clamp(-6.8rem, -7vw, -5.25rem); width: clamp(174px, 14.2vw, 208px); transform: translateY(-50%); }
 .initial-offer-badge-wrap::before { content: ""; position: absolute; z-index: -1; inset: -52%; border-radius: 50%; background: radial-gradient(circle, rgba(252,142,76,.25), rgba(252,142,76,.08) 42%, transparent 70%); pointer-events: none; }
-.initial-offer-badge { display: grid; position: relative; width: 100%; aspect-ratio: 1; place-content: center; border: 3px solid #ffc29d; border-radius: 50%; background: var(--color-accent); color: var(--color-primary); font: 400 .72rem/1 var(--font-display); letter-spacing: .13em; text-align: center; text-transform: uppercase; box-shadow: 0 0 9px rgba(252,142,76,1), 0 0 27px rgba(252,142,76,.76), 0 0 58px rgba(252,142,76,.42), inset 0 0 18px rgba(255,255,255,.3); }
+.initial-offer-badge { display: grid; position: relative; width: 100%; aspect-ratio: 1; row-gap: .35rem; place-content: center; padding: 1rem .7rem; border: 3px solid #ffc29d; border-radius: 50%; background: var(--color-accent); color: var(--color-primary); font: 400 .72rem/1 var(--font-display); letter-spacing: .13em; text-align: center; text-transform: uppercase; box-shadow: 0 0 9px rgba(252,142,76,1), 0 0 27px rgba(252,142,76,.76), 0 0 58px rgba(252,142,76,.42), inset 0 0 18px rgba(255,255,255,.3); }
 .initial-offer-badge::before,
 .initial-offer-badge::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
 .initial-offer-badge::before { inset: -10px; border: 2px solid rgba(252,142,76,.86); box-shadow: 0 0 16px rgba(252,142,76,.7); }
 .initial-offer-badge::after { inset: 8px; border: 1px solid rgba(255,255,255,.44); }
-.initial-offer-badge strong { margin: .12rem 0 .04rem; color: var(--color-primary); font: 400 clamp(3.8rem, 5.5vw, 5.5rem)/.8 var(--font-display); letter-spacing: -.04em; }
-.initial-offer-badge b { color: var(--color-primary); font: 400 clamp(1.55rem, 2.15vw, 2.05rem)/1 var(--font-display); letter-spacing: .055em; }
+.initial-offer-badge strong { margin: 0; color: var(--color-primary); font: 400 clamp(4.18rem, 6vw, 6.05rem)/.76 var(--font-display); letter-spacing: -.04em; }
+.initial-offer-badge b { color: var(--color-primary); font: 400 clamp(1.55rem, 2.15vw, 2.05rem)/.9 var(--font-display); letter-spacing: .055em; }
 .initial-offer.is-visible .initial-offer-badge { animation: initial-offer-neon 4.4s ease-in-out .35s infinite; }
 .initial-offer.is-visible .initial-offer-badge::before { animation: initial-offer-ring 4.4s ease-in-out .35s infinite; }
 .initial-offer-side { display: grid; position: relative; z-index: 1; min-width: 0; align-items: center; padding: clamp(1.45rem, 2.6vw, 2.5rem) clamp(1.25rem, 2.3vw, 2.25rem); padding-left: clamp(7.5rem, 10.5vw, 10.5rem); overflow: hidden; clip-path: polygon(11% 0, 100% 0, 100% 100%, 0 100%); background: var(--color-primary); color: #fff; }
@@ -232,7 +235,8 @@ h1 em, h2 em, .problem-answer em { color: var(--color-accent); font-style: norma
   .initial-offer-copy { margin: 1.35rem 0 1.2rem; font-size: .9rem; line-height: 1.55; }
   .initial-offer-badge-wrap { width: 170px; margin: .7rem auto 1.3rem; }
   .initial-offer-badge { box-shadow: 0 0 7px rgba(252,142,76,.92), 0 0 20px rgba(252,142,76,.64), 0 0 40px rgba(252,142,76,.3), inset 0 0 15px rgba(255,255,255,.28); }
-  .initial-offer-badge strong { font-size: 4.15rem; }
+  .initial-offer-badge { row-gap: .28rem; }
+  .initial-offer-badge strong { font-size: 4.55rem; }
   .initial-offer-side { min-height: 190px; padding: 1.5rem 1.15rem; }
   .initial-offer-calendar { width: 34px; height: 34px; }
   .initial-offer-reservation h4 { font-size: clamp(1.75rem, 8.2vw, 2.25rem); }
