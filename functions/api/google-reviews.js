@@ -8,6 +8,9 @@ const DAILY_GOOGLE_CALL_LIMIT = 25;
 const MONTHLY_GOOGLE_CALL_LIMIT = 750;
 const BILLING_TIME_ZONE = "America/Los_Angeles"; // Google Maps free usage resets on Pacific time.
 const GUARD_BINDING = "REVIEWS_GUARD";
+// Public Place ID verified for the ALTA Coaching Google Maps listing.
+// Keeping it as a server-side fallback removes one deployment variable without exposing a secret.
+const DEFAULT_PLACE_ID = "ChIJl71pI8UkAGARNqUt91qW4jc";
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -133,8 +136,28 @@ export async function onRequest({ request, env }) {
   }
 
   const apiKey = getEnv(env, ["GOOGLE_PLACES_API_KEY", "GOOGLE_MAPS_API_KEY", "GOOGLE_API_KEY"]);
-  const placeId = getEnv(env, ["GOOGLE_PLACE_ID", "ALTA_GOOGLE_PLACE_ID"]);
+  const placeId = getEnv(env, ["GOOGLE_PLACE_ID", "ALTA_GOOGLE_PLACE_ID"]) || DEFAULT_PLACE_ID;
   const fallbackUri = fallbackGoogleMapsUri(placeId);
+
+  // Safe health check: verifies bindings/configuration without calling Google
+  // and therefore without consuming the protected Google request budget.
+  const requestUrl = new URL(request.url);
+  if (requestUrl.searchParams.get("health") === "1") {
+    let guardReady = false;
+    try {
+      const db = env?.[GUARD_BINDING];
+      if (db && typeof db.prepare === "function") {
+        const row = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'google_reviews_guard'").first();
+        guardReady = Boolean(row?.name);
+      }
+    } catch {}
+    return json({
+      status: apiKey && placeId && guardReady ? "ready" : "not_ready",
+      apiKeyConfigured: Boolean(apiKey),
+      placeIdConfigured: Boolean(placeId),
+      guardConfigured: guardReady
+    }, apiKey && placeId && guardReady ? 200 : 503);
+  }
 
   if (!apiKey || !placeId) {
     return json({ status: "not_configured", fallbackGoogleMapsUri: fallbackUri }, 503);
@@ -177,8 +200,17 @@ export async function onRequest({ request, env }) {
 
     const payload = await response.json().catch(() => null);
     if (!response.ok || !payload) {
+      console.error("ALTA Google Reviews upstream error", {
+        httpStatus: response.status,
+        googleStatus: payload?.error?.status || null
+      });
       return json(
-        { status: "google_unavailable", fallbackGoogleMapsUri: fallbackUri },
+        {
+          status: "google_unavailable",
+          googleHttpStatus: response.status,
+          googleErrorStatus: payload?.error?.status || null,
+          fallbackGoogleMapsUri: fallbackUri
+        },
         response.status >= 400 && response.status < 500 ? 502 : 503
       );
     }
