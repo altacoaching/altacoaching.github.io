@@ -2,7 +2,7 @@
   const section = document.querySelector("[data-google-reviews]");
   if (!section) return;
 
-  const endpoint = "/api/google-reviews?v=6";
+  const endpoint = "/api/google-reviews?v=7";
   const track = section.querySelector("[data-reviews-track]");
   const score = section.querySelector("[data-reviews-score]");
   const stars = section.querySelector("[data-reviews-stars]");
