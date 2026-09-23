@@ -135,7 +135,7 @@ export async function onRequest({ request, env }) {
     return new Response(null, { status: 405, headers: { Allow: "GET" } });
   }
 
-  const apiKey = getEnv(env, ["GOOGLE_PLACES_API_KEY", "GOOGLE_MAPS_API_KEY", "GOOGLE_API_KEY"]);
+  const apiKey = getEnv(env, ["GOOGLE_PLACES_API_KEY", "GOOGLE_MAPS_API_KEY", "GOOGLE_API_KEY", "GOOGLE_PLACES_KEY", "GOOGLE_REVIEWS_API_KEY", "GOOGLE_MAPS_KEY"]);
   const placeId = getEnv(env, ["GOOGLE_PLACE_ID", "ALTA_GOOGLE_PLACE_ID"]) || DEFAULT_PLACE_ID;
   const fallbackUri = fallbackGoogleMapsUri(placeId);
 
