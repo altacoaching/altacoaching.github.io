@@ -2,7 +2,7 @@
   const section = document.querySelector("[data-google-reviews]");
   if (!section) return;
 
-  const endpoint = "/api/google-reviews?v=3";
+  const endpoint = "/api/google-reviews?v=5";
   const track = section.querySelector("[data-reviews-track]");
   const score = section.querySelector("[data-reviews-score]");
   const stars = section.querySelector("[data-reviews-stars]");
@@ -11,8 +11,10 @@
   const allReviewsLink = section.querySelector("[data-reviews-link]");
   const prev = section.querySelector("[data-reviews-prev]");
   const next = section.querySelector("[data-reviews-next]");
+  const pagination = section.querySelector("[data-reviews-pagination]");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let loaded = false;
+  let scrollFrame = 0;
 
   const safeHttpsUrl = (value) => {
     if (typeof value !== "string" || !value.trim()) return null;
@@ -120,11 +122,48 @@
     return article;
   };
 
+  const updateActiveCard = () => {
+    if (!track) return;
+    const cards = [...track.querySelectorAll(".google-review-card")];
+    if (!cards.length) return;
+
+    let activeIndex = 0;
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+    if (maxScroll > 4 && track.scrollLeft > 4) {
+      const trackRect = track.getBoundingClientRect();
+      const center = trackRect.left + trackRect.width / 2;
+      let distance = Infinity;
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const currentDistance = Math.abs((rect.left + rect.width / 2) - center);
+        if (currentDistance < distance) {
+          distance = currentDistance;
+          activeIndex = index;
+        }
+      });
+    }
+
+    cards.forEach((card, index) => card.classList.toggle("is-active", index === activeIndex));
+    if (pagination) {
+      [...pagination.children].forEach((dot, index) => dot.classList.toggle("is-active", index === activeIndex));
+    }
+  };
+
   const updateControls = () => {
-    if (!track || !prev || !next) return;
-    const max = Math.max(0, track.scrollWidth - track.clientWidth);
-    prev.disabled = track.scrollLeft <= 4;
-    next.disabled = track.scrollLeft >= max - 4;
+    if (track && prev && next) {
+      const max = Math.max(0, track.scrollWidth - track.clientWidth);
+      prev.disabled = track.scrollLeft <= 4;
+      next.disabled = track.scrollLeft >= max - 4;
+    }
+    updateActiveCard();
+  };
+
+  const queueUpdate = () => {
+    if (scrollFrame) cancelAnimationFrame(scrollFrame);
+    scrollFrame = requestAnimationFrame(() => {
+      scrollFrame = 0;
+      updateControls();
+    });
   };
 
   const scrollByCard = (direction) => {
@@ -144,11 +183,12 @@
   const unavailable = (message, fallbackUrl = null) => {
     section.classList.add("is-unavailable");
     if (track) track.replaceChildren();
-    setText(status, message || "Les avis Google Maps sont momentanément indisponibles.");
+    setText(status, message || "Avis momentanément indisponibles.");
     setFallbackLink(fallbackUrl);
   };
 
   const render = (payload) => {
+    section.classList.remove("is-unavailable");
     const reviews = Array.isArray(payload?.reviews) ? payload.reviews : [];
     setFallbackLink(payload?.googleMapsUri || payload?.fallbackGoogleMapsUri);
     if (!reviews.length) return unavailable("Consultez les avis directement sur Google Maps.", payload?.googleMapsUri || payload?.fallbackGoogleMapsUri);
@@ -162,9 +202,21 @@
     const total = Number(payload.userRatingCount);
     if (Number.isFinite(total)) setText(count, `${total.toLocaleString("fr-FR")} avis Google`);
 
+    const visibleReviews = reviews.slice(0, 5);
     const fragment = document.createDocumentFragment();
-    reviews.slice(0, 5).forEach((review) => fragment.appendChild(createReview(review)));
+    visibleReviews.forEach((review) => fragment.appendChild(createReview(review)));
     track?.replaceChildren(fragment);
+
+    if (pagination) {
+      const dots = document.createDocumentFragment();
+      visibleReviews.forEach((_, index) => {
+        const dot = document.createElement("span");
+        dot.className = `google-reviews-dot${index === 0 ? " is-active" : ""}`;
+        dots.appendChild(dot);
+      });
+      pagination.replaceChildren(dots);
+    }
+
     setText(status, "");
     requestAnimationFrame(updateControls);
   };
@@ -175,20 +227,27 @@
     try {
       const response = await fetch(endpoint, { headers: { Accept: "application/json" }, cache: "no-store" });
       const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload) throw Object.assign(new Error("reviews_unavailable"), { payload });
+      if (!response.ok || !payload) throw Object.assign(new Error("reviews_unavailable"), { payload, httpStatus: response.status });
       render(payload);
     } catch (error) {
       const reason = error?.payload?.status || "network_error";
       section.dataset.reviewsError = reason;
-      console.warn("ALTA Google Reviews:", reason);
+      section.dataset.reviewsHttp = String(error?.httpStatus || "");
+      if (error?.payload?.googleErrorStatus) section.dataset.googleError = error.payload.googleErrorStatus;
+      console.warn("ALTA Google Reviews:", {
+        status: reason,
+        httpStatus: error?.httpStatus || null,
+        googleHttpStatus: error?.payload?.googleHttpStatus || null,
+        googleErrorStatus: error?.payload?.googleErrorStatus || null
+      });
       unavailable("Avis momentanément indisponibles.", error?.payload?.fallbackGoogleMapsUri);
     }
   };
 
   prev?.addEventListener("click", () => scrollByCard(-1));
   next?.addEventListener("click", () => scrollByCard(1));
-  track?.addEventListener("scroll", () => requestAnimationFrame(updateControls), { passive: true });
-  window.addEventListener("resize", updateControls, { passive: true });
+  track?.addEventListener("scroll", queueUpdate, { passive: true });
+  window.addEventListener("resize", queueUpdate, { passive: true });
 
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver((entries) => {
