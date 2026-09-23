@@ -2,7 +2,7 @@
   const section = document.querySelector("[data-google-reviews]");
   if (!section) return;
 
-  const endpoint = "/api/google-reviews?v=2";
+  const endpoint = "/api/google-reviews?v=3";
   const track = section.querySelector("[data-reviews-track]");
   const score = section.querySelector("[data-reviews-score]");
   const stars = section.querySelector("[data-reviews-stars]");
@@ -165,7 +165,7 @@
     const fragment = document.createDocumentFragment();
     reviews.slice(0, 5).forEach((review) => fragment.appendChild(createReview(review)));
     track?.replaceChildren(fragment);
-    setText(status, "Avis Google Maps chargés.");
+    setText(status, "");
     requestAnimationFrame(updateControls);
   };
 
@@ -178,7 +178,10 @@
       if (!response.ok || !payload) throw Object.assign(new Error("reviews_unavailable"), { payload });
       render(payload);
     } catch (error) {
-      unavailable("Les avis Google Maps sont momentanément indisponibles.", error?.payload?.fallbackGoogleMapsUri);
+      const reason = error?.payload?.status || "network_error";
+      section.dataset.reviewsError = reason;
+      console.warn("ALTA Google Reviews:", reason);
+      unavailable("Avis momentanément indisponibles.", error?.payload?.fallbackGoogleMapsUri);
     }
   };
 
@@ -192,7 +195,7 @@
       if (!entries.some((entry) => entry.isIntersecting)) return;
       observer.disconnect();
       load();
-    }, { rootMargin: "220px 0px" });
+    }, { rootMargin: "500px 0px" });
     observer.observe(section);
   } else load();
 })();
