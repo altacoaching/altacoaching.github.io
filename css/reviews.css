@@ -1,4 +1,4 @@
-/* ALTA V14 — Avis Google : fond blanc, palette ALTA et relief orange */
+/* ALTA V15 — Avis Google : fond blanc et relief par liseré orange */
 .home-page-v34 .after-contact { padding-bottom: 0; }
 .home-page-v34 #coaching.section { padding-top: clamp(3rem, 5vw, 5.2rem); }
 
@@ -148,69 +148,29 @@
 .google-review-card {
   position: relative;
   z-index: 0;
-  isolation: isolate;
   overflow: visible;
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: 260px;
   padding: 1.45rem 1.45rem 1.15rem;
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-accent);
+  background: var(--color-light);
   box-shadow:
-    0 8px 16px rgba(17,19,23,.045),
-    0 22px 44px rgba(17,19,23,.10),
-    0 42px 76px rgba(17,19,23,.055);
+    0 0 0 3px rgba(252,142,76,.10),
+    0 14px 30px rgba(17,19,23,.07);
   transform: translateY(0) scale(1);
   transform-origin: 50% 50%;
   transition: transform .38s cubic-bezier(.22,1,.36,1), border-color .3s ease, box-shadow .38s ease, opacity .3s ease;
 }
-.google-review-card::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -9px 16px 11px -10px;
-  border-radius: 18px;
-  background: rgba(252,142,76,.72);
-  box-shadow: 0 16px 34px rgba(252,142,76,.16);
-  transform: rotate(-2.6deg);
-  transform-origin: 50% 50%;
-  transition: transform .38s cubic-bezier(.22,1,.36,1), opacity .3s ease;
-}
-.google-review-card:nth-child(2n)::before {
-  inset: -10px -9px 12px 17px;
-  transform: rotate(2.2deg);
-}
-.google-review-card:nth-child(3n)::before {
-  inset: -8px 13px 10px -8px;
-  transform: rotate(-1.8deg);
-}
-.google-review-card::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: auto 8% -17px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(17,19,23,.10);
-  filter: blur(18px);
-  opacity: .55;
-  transition: transform .38s cubic-bezier(.22,1,.36,1), opacity .3s ease;
-}
 .google-review-card:hover,
 .google-review-card:focus-within {
   z-index: 2;
-  transform: translateY(-12px) scale(1.018);
-  border-color: rgba(252,142,76,.34);
+  transform: translateY(-10px) scale(1.012);
+  border-color: var(--color-accent);
   box-shadow:
-    0 7px 14px rgba(17,19,23,.035),
-    0 28px 58px rgba(17,19,23,.13),
-    0 52px 90px rgba(252,142,76,.055);
+    0 0 0 4px rgba(252,142,76,.14),
+    0 20px 38px rgba(17,19,23,.09);
 }
-.google-review-card:hover::before,
-.google-review-card:focus-within::before { transform: rotate(-1deg) translateY(5px) scale(1.015); }
-.google-review-card:nth-child(2n):hover::before,
-.google-review-card:nth-child(2n):focus-within::before { transform: rotate(1deg) translateY(5px) scale(1.015); }
-.google-review-card:hover::after,
-.google-review-card:focus-within::after { transform: translateY(8px) scale(.9); opacity: .72; }
 .google-review-top { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
 .google-review-stars { font-size: 1.05rem; }
 .google-review-source { color: var(--color-muted); font: 500 11px/1.2 Roboto, Inter, sans-serif; white-space: nowrap; }
@@ -347,7 +307,7 @@ a.google-review-author-name:hover { text-decoration: underline; }
     scroll-snap-align: center;
   }
   .google-review-card {
-    min-height: 390px;
+    min-height: 420px;
     padding: 1.55rem 1.35rem 1.3rem;
     opacity: .72;
     transform: translateY(12px) scale(.955);
@@ -362,10 +322,6 @@ a.google-review-author-name:hover { text-decoration: underline; }
     -webkit-line-clamp: unset;
     -webkit-box-orient: initial;
   }
-  .google-review-card::before {
-    inset: -10px 14px 12px -9px;
-    background: rgba(252,142,76,.72);
-  }
   /* La carte centrée monte nettement pendant le swipe, comme demandé. */
   .google-review-card.is-active {
     z-index: 2;
@@ -373,11 +329,9 @@ a.google-review-author-name:hover { text-decoration: underline; }
     transform: translateY(-13px) scale(1.02);
     border-color: rgba(252,142,76,.32);
     box-shadow:
-      0 10px 18px rgba(17,19,23,.045),
-      0 28px 58px rgba(17,19,23,.16),
-      0 48px 76px rgba(252,142,76,.07);
+      0 0 0 4px rgba(252,142,76,.14),
+      0 22px 42px rgba(17,19,23,.10);
   }
-  .google-review-card.is-active::after { transform: translateY(9px) scale(.88); opacity: .72; }
   .google-review-card:hover { transform: translateY(-13px) scale(1.02); }
   .google-reviews-pagination { margin-top: -.75rem; margin-bottom: .8rem; }
   .google-reviews-meta { grid-template-columns: 1fr; grid-template-areas: "order" "link" "status"; gap: .38rem; }
@@ -387,8 +341,6 @@ a.google-review-author-name:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) {
   .google-review-skeleton { animation: none; }
   .google-review-card,
-  .google-review-card::before,
-  .google-review-card::after,
   .google-reviews-control,
   .google-reviews-dot { transition: none; }
   .google-review-card:hover,
