@@ -162,14 +162,19 @@
   transform-origin: 50% 50%;
   transition: transform .38s cubic-bezier(.22,1,.36,1), border-color .3s ease, box-shadow .38s ease, opacity .3s ease;
 }
-.google-review-card:hover,
-.google-review-card:focus-within {
-  z-index: 2;
-  transform: translateY(-10px) scale(1.012);
-  border-color: var(--color-accent);
-  box-shadow:
-    0 0 0 4px rgba(252,142,76,.14),
-    0 20px 38px rgba(17,19,23,.09);
+/* Le relief au survol est réservé aux périphériques avec un vrai pointeur.
+   Sur iOS, :hover peut rester accroché après un swipe et maintenir l'ancienne
+   carte en position haute. Sur tactile, seule .is-active pilote la hauteur. */
+@media (hover: hover) and (pointer: fine) {
+  .google-review-card:hover,
+  .google-review-card:focus-within {
+    z-index: 2;
+    transform: translateY(-10px) scale(1.012);
+    border-color: var(--color-accent);
+    box-shadow:
+      0 0 0 4px rgba(252,142,76,.14),
+      0 20px 38px rgba(17,19,23,.09);
+  }
 }
 .google-review-top { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
 .google-review-stars { font-size: 1.05rem; }
@@ -332,7 +337,6 @@ a.google-review-author-name:hover { text-decoration: underline; }
       0 0 0 4px rgba(252,142,76,.14),
       0 22px 42px rgba(17,19,23,.10);
   }
-  .google-review-card:hover { transform: translateY(-13px) scale(1.02); }
   .google-reviews-pagination { margin-top: -.75rem; margin-bottom: .8rem; }
   .google-reviews-meta { grid-template-columns: 1fr; grid-template-areas: "order" "link" "status"; gap: .38rem; }
   .google-reviews-link { justify-self: start; }
